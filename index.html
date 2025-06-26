@@ -1,0 +1,3565 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Zen Garden - 禅的実験室</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500&display=swap');
+        
+        :root {
+            --zen-black: #1a1a1a;
+            --zen-charcoal: #2d2d2d;
+            --zen-stone: #4a4a4a;
+            --zen-silver: #8a8a8a;
+            --zen-pearl: #e8e8e8;
+            --zen-white: #fafafa;
+            --zen-accent: #d4af37;
+            --golden-ratio: 1.618;
+            --breathing: cubic-bezier(0.4, 0.0, 0.2, 1);
+            --meditation: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, var(--zen-black) 0%, var(--zen-charcoal) 100%);
+            color: var(--zen-pearl);
+            line-height: calc(1em * var(--golden-ratio));
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        /* Three.js Canvas Background */
+        #zen-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.7;
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            display: flex;
+            gap: 2rem;
+            padding: 1rem 2rem;
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 50px;
+            border: 1px solid rgba(232, 232, 232, 0.1);
+        }
+        
+        .nav-item {
+            color: var(--zen-silver);
+            text-decoration: none;
+            font-weight: 300;
+            font-size: 0.9rem;
+            transition: all 0.3s var(--breathing);
+            position: relative;
+        }
+        
+        .nav-item:hover {
+            color: var(--zen-accent);
+            transform: translateY(-1px);
+        }
+        
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            width: 0;
+            height: 1px;
+            background: var(--zen-accent);
+            transition: all 0.3s var(--meditation);
+            transform: translateX(-50%);
+        }
+        
+        .nav-item:hover::after {
+            width: 100%;
+        }
+        
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 300;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: breatheIn 2s var(--meditation) 0.5s forwards;
+            letter-spacing: 0.05em;
+        }
+        
+        .hero-subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: 300;
+            color: var(--zen-silver);
+            opacity: 0;
+            animation: breatheIn 2s var(--meditation) 1s forwards;
+            margin-bottom: 3rem;
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            animation: breatheIn 2s var(--meditation) 2s forwards;
+        }
+        
+        .scroll-line {
+            width: 1px;
+            height: 3rem;
+            background: linear-gradient(to bottom, transparent, var(--zen-accent), transparent);
+            margin: 0 auto 1rem;
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        /* Works Grid */
+        .works-section {
+            padding: 8rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 300;
+            text-align: center;
+            margin-bottom: 4rem;
+            opacity: 0;
+            transform: translateY(2rem);
+            transition: all 1s var(--meditation);
+        }
+        
+        .section-title.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .works-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 3rem;
+            margin-bottom: 6rem;
+        }
+        
+        .work-card {
+            background: rgba(74, 74, 74, 0.1);
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 1px solid rgba(232, 232, 232, 0.05);
+            backdrop-filter: blur(10px);
+            transition: all 0.5s var(--breathing);
+            opacity: 0;
+            transform: translateY(3rem);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .work-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+            transition: left 0.8s var(--meditation);
+        }
+        
+        .work-card:hover::before {
+            left: 100%;
+        }
+        
+        .work-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .work-card:hover {
+            transform: translateY(-0.5rem);
+            border-color: rgba(212, 175, 55, 0.3);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.1);
+        }
+        
+        .work-preview {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, var(--zen-charcoal), var(--zen-stone));
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mandala-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border: 2px solid var(--zen-accent);
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+        }
+        
+        .mandala-preview::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px solid var(--zen-silver);
+            border-radius: 50%;
+            animation: rotate 15s linear infinite reverse;
+        }
+        
+        .mandala-preview::after {
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            bottom: 30px;
+            border: 1px solid var(--zen-pearl);
+            border-radius: 50%;
+            animation: rotate 10s linear infinite;
+        }
+        
+        .geometry-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--zen-accent);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .zen-garden-preview {
+            position: absolute;
+            top: 70%;
+            left: 20%;
+            width: 60px;
+            height: 60px;
+            background: var(--zen-silver);
+            border-radius: 50%;
+            animation: ripple 4s ease-in-out infinite;
+        }
+        
+        .zen-garden-preview::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border: 1px solid var(--zen-accent);
+            border-radius: 50%;
+            animation: ripple 4s ease-in-out infinite 1s;
+        }
+        
+        /* Advanced Work Previews */
+        .fractal-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--zen-accent);
+            border-radius: 10%;
+            animation: fractalZoom 8s ease-in-out infinite;
+        }
+        
+        .fractal-preview::before {
+            content: '';
+            position: absolute;
+            top: 25%;
+            left: 25%;
+            width: 50%;
+            height: 50%;
+            border: 1px solid var(--zen-silver);
+            border-radius: 10%;
+            animation: fractalZoom 6s ease-in-out infinite reverse;
+        }
+        
+        .cellular-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            width: 80px;
+            height: 80px;
+        }
+        
+        .cellular-preview::before {
+            content: '';
+            grid-column: 1 / -1;
+            grid-row: 1 / -1;
+            background: 
+                radial-gradient(circle at 20% 20%, var(--zen-accent) 2px, transparent 2px),
+                radial-gradient(circle at 80% 20%, var(--zen-accent) 2px, transparent 2px),
+                radial-gradient(circle at 50% 80%, var(--zen-accent) 2px, transparent 2px);
+            background-size: 16px 16px;
+            animation: cellular 3s linear infinite;
+        }
+        
+        .noise-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 80px;
+            background: linear-gradient(45deg, var(--zen-stone), var(--zen-silver), var(--zen-stone));
+            border-radius: 10px;
+            animation: landscape 6s ease-in-out infinite;
+            overflow: hidden;
+        }
+        
+        .noise-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: linear-gradient(90deg, transparent, var(--zen-pearl), transparent);
+            animation: clouds 4s ease-in-out infinite;
+        }
+        
+        .lsystem-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 2px;
+            height: 60px;
+            background: var(--zen-accent);
+            transform-origin: bottom center;
+            animation: grow 5s ease-in-out infinite;
+        }
+        
+        .lsystem-preview::before,
+        .lsystem-preview::after {
+            content: '';
+            position: absolute;
+            bottom: 60%;
+            left: 50%;
+            width: 2px;
+            height: 40px;
+            background: var(--zen-silver);
+            transform-origin: bottom center;
+            animation: branch 5s ease-in-out infinite;
+        }
+        
+        .lsystem-preview::before {
+            transform: translate(-50%, 0) rotate(-30deg);
+            animation-delay: 1s;
+        }
+        
+        .lsystem-preview::after {
+            transform: translate(-50%, 0) rotate(30deg);
+            animation-delay: 1.5s;
+        }
+        
+        .sutra-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Noto Sans JP', serif;
+            font-size: 12px;
+            color: var(--zen-accent);
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            animation: textFloat 4s ease-in-out infinite;
+        }
+        
+        .sutra-preview::before {
+            content: '般若心経';
+            position: absolute;
+            animation: textDissolve 6s ease-in-out infinite;
+        }
+        
+        .audio-reactive-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 60px;
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+        }
+        
+        .audio-reactive-preview::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--zen-accent);
+            animation: audioBar1 2s ease-in-out infinite;
+        }
+        
+        .audio-reactive-preview::after {
+            content: '';
+            width: 4px;
+            height: 40px;
+            background: var(--zen-silver);
+            animation: audioBar2 2s ease-in-out infinite 0.5s;
+        }
+        
+        .meditation-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--zen-accent);
+            border-radius: 50%;
+            animation: breatheMeditation 6s ease-in-out infinite;
+        }
+        
+        .meditation-preview::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            height: 50%;
+            background: var(--zen-accent);
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: breatheMeditation 6s ease-in-out infinite reverse;
+        }
+        
+        .physics-preview {
+            position: absolute;
+            top: 70%;
+            left: 30%;
+            width: 15px;
+            height: 15px;
+            background: var(--zen-stone);
+            border-radius: 50%;
+            animation: bounce 3s ease-in-out infinite;
+        }
+        
+        .physics-preview::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 20px;
+            width: 12px;
+            height: 12px;
+            background: var(--zen-silver);
+            border-radius: 50%;
+            animation: bounce 3s ease-in-out infinite 0.3s;
+        }
+        
+        .physics-preview::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 40px;
+            width: 10px;
+            height: 10px;
+            background: var(--zen-accent);
+            border-radius: 50%;
+            animation: bounce 3s ease-in-out infinite 0.6s;
+        }
+        
+        /* Advanced Card Styling */
+        .work-card.advanced {
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            background: rgba(212, 175, 55, 0.05);
+        }
+        
+        .work-card.advanced:hover {
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.2);
+        }
+        
+        /* Zen Card Styling */
+        .work-card.zen {
+            border: 1px solid rgba(232, 232, 232, 0.3);
+            background: linear-gradient(135deg, rgba(232, 232, 232, 0.05), rgba(138, 138, 138, 0.05));
+        }
+        
+        .work-card.zen:hover {
+            border-color: rgba(232, 232, 232, 0.6);
+            box-shadow: 0 25px 50px rgba(232, 232, 232, 0.1);
+            transform: translateY(-0.8rem);
+        }
+        
+        /* Zen Work Previews */
+        .ripple-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent 30%, rgba(212, 175, 55, 0.1) 31%, rgba(212, 175, 55, 0.1) 40%, transparent 41%);
+            animation: waterRipple 3s ease-out infinite;
+        }
+        
+        .ripple-preview::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 4px;
+            background: var(--zen-accent);
+            border-radius: 50%;
+            animation: dropFall 3s ease-out infinite;
+        }
+        
+        .rain-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(75deg, transparent 45%, rgba(138, 138, 138, 0.3) 46%, rgba(138, 138, 138, 0.3) 47%, transparent 48%),
+                linear-gradient(78deg, transparent 48%, rgba(138, 138, 138, 0.2) 49%, rgba(138, 138, 138, 0.2) 50%, transparent 51%),
+                linear-gradient(72deg, transparent 47%, rgba(138, 138, 138, 0.4) 48%, rgba(138, 138, 138, 0.4) 49%, transparent 50%);
+            background-size: 20px 20px, 15px 25px, 18px 22px;
+            animation: rainFlow 2s linear infinite;
+        }
+        
+        .ink-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, var(--zen-charcoal) 20%, transparent 50%);
+            border-radius: 50%;
+            animation: inkBleed 4s ease-out infinite;
+            filter: blur(2px);
+        }
+        
+        .ink-preview::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            right: 10%;
+            bottom: 10%;
+            background: radial-gradient(circle, var(--zen-stone) 30%, transparent 70%);
+            border-radius: 50%;
+            animation: inkBleed 4s ease-out infinite 0.5s;
+            filter: blur(1px);
+        }
+        
+        .sakura-preview {
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            width: 8px;
+            height: 8px;
+            background: #ffb7c5;
+            border-radius: 50% 0 50% 0;
+            animation: sakuraFall 4s ease-in-out infinite;
+        }
+        
+        .sakura-preview::before {
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: 40px;
+            width: 6px;
+            height: 6px;
+            background: #ffc0cb;
+            border-radius: 50% 0 50% 0;
+            animation: sakuraFall 4s ease-in-out infinite 1s;
+        }
+        
+        .sakura-preview::after {
+            content: '';
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            width: 7px;
+            height: 7px;
+            background: #ffb7c5;
+            border-radius: 50% 0 50% 0;
+            animation: sakuraFall 4s ease-in-out infinite 2s;
+        }
+        
+        .bamboo-preview {
+            position: absolute;
+            top: 20%;
+            left: 30%;
+            width: 4px;
+            height: 120px;
+            background: linear-gradient(to bottom, var(--zen-stone), var(--zen-accent));
+            border-radius: 2px;
+            animation: bambooSway 3s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+        
+        .bamboo-preview::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            width: 4px;
+            height: 100px;
+            background: linear-gradient(to bottom, var(--zen-silver), var(--zen-stone));
+            border-radius: 2px;
+            animation: bambooSway 3s ease-in-out infinite 0.5s;
+            transform-origin: bottom center;
+        }
+        
+        .bamboo-preview::after {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 10px;
+            width: 4px;
+            height: 110px;
+            background: linear-gradient(to bottom, var(--zen-accent), var(--zen-charcoal));
+            border-radius: 2px;
+            animation: bambooSway 3s ease-in-out infinite 1s;
+            transform-origin: bottom center;
+        }
+        
+        .moonlight-preview {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, var(--zen-pearl) 0%, var(--zen-silver) 40%, transparent 70%);
+            border-radius: 50%;
+            animation: moonGlow 5s ease-in-out infinite;
+        }
+        
+        .moonlight-preview::before {
+            content: '';
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 60px;
+            background: linear-gradient(to bottom, var(--zen-pearl), transparent);
+            animation: moonReflection 5s ease-in-out infinite;
+        }
+        
+        .work-title {
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-bottom: 0.8rem;
+            color: var(--zen-white);
+        }
+        
+        .work-description {
+            color: var(--zen-silver);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .work-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .tech-tag {
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--zen-accent);
+            padding: 0.3rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        
+        /* Philosophy Section */
+        .philosophy-section {
+            padding: 8rem 2rem;
+            background: linear-gradient(135deg, rgba(45, 45, 45, 0.3), rgba(26, 26, 26, 0.3));
+            text-align: center;
+        }
+        
+        .philosophy-text {
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+            line-height: 2;
+            color: var(--zen-silver);
+            opacity: 0;
+            transform: translateY(2rem);
+            transition: all 1s var(--meditation);
+        }
+        
+        .philosophy-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Footer */
+        footer {
+            padding: 4rem 2rem 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(232, 232, 232, 0.1);
+        }
+        
+        .footer-content {
+            color: var(--zen-silver);
+            font-size: 0.9rem;
+        }
+        
+        /* Animations */
+        @keyframes breatheIn {
+            from {
+                opacity: 0;
+                transform: translateY(2rem);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes rotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-10px); }
+        }
+        
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        @keyframes fractalZoom {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.3); }
+        }
+        
+        @keyframes cellular {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: 16px 16px, -16px 16px, 8px -16px; }
+        }
+        
+        @keyframes landscape {
+            0%, 100% { transform: translate(-50%, -50%) scaleY(1); }
+            50% { transform: translate(-50%, -50%) scaleY(1.2); }
+        }
+        
+        @keyframes clouds {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes grow {
+            0% { height: 20px; }
+            50% { height: 60px; }
+            100% { height: 40px; }
+        }
+        
+        @keyframes branch {
+            0% { height: 0; opacity: 0; }
+            50% { height: 30px; opacity: 1; }
+            100% { height: 20px; opacity: 0.7; }
+        }
+        
+        @keyframes textFloat {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-10px); }
+        }
+        
+        @keyframes textDissolve {
+            0% { opacity: 1; filter: blur(0); }
+            50% { opacity: 0.3; filter: blur(2px); }
+            100% { opacity: 1; filter: blur(0); }
+        }
+        
+        @keyframes audioBar1 {
+            0%, 100% { height: 20px; }
+            25% { height: 50px; }
+            50% { height: 30px; }
+            75% { height: 45px; }
+        }
+        
+        @keyframes audioBar2 {
+            0%, 100% { height: 40px; }
+            25% { height: 60px; }
+            50% { height: 25px; }
+            75% { height: 55px; }
+        }
+        
+        @keyframes breatheMeditation {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            33% { transform: translate(-50%, -50%) scale(1.2); }  /* 吸う */
+            50% { transform: translate(-50%, -50%) scale(1.2); }  /* 止める */
+            100% { transform: translate(-50%, -50%) scale(1); }   /* 吐く */
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes waterRipple {
+            0% { 
+                transform: translate(-50%, -50%) scale(0.3); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(2); 
+                opacity: 0; 
+            }
+        }
+        
+        @keyframes dropFall {
+            0% { 
+                transform: translate(-50%, -80px) scale(1); 
+                opacity: 1; 
+            }
+            30% { 
+                transform: translate(-50%, -50%) scale(1.2); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(0); 
+                opacity: 0; 
+            }
+        }
+        
+        @keyframes rainFlow {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: -20px 20px, -15px 25px, -18px 22px; }
+        }
+        
+        @keyframes inkBleed {
+            0% { 
+                transform: translate(-50%, -50%) scale(0.2); 
+                opacity: 0.8; 
+                filter: blur(0); 
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1); 
+                opacity: 0.6; 
+                filter: blur(3px); 
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(1.5); 
+                opacity: 0.2; 
+                filter: blur(5px); 
+            }
+        }
+        
+        @keyframes sakuraFall {
+            0% { 
+                transform: translateY(0) rotate(0deg); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translateY(120px) rotate(360deg); 
+                opacity: 0; 
+            }
+        }
+        
+        @keyframes bambooSway {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(2deg); }
+            75% { transform: rotate(-2deg); }
+        }
+        
+        @keyframes moonGlow {
+            0%, 100% { 
+                opacity: 0.8; 
+                box-shadow: 0 0 20px rgba(232, 232, 232, 0.3); 
+            }
+            50% { 
+                opacity: 1; 
+                box-shadow: 0 0 30px rgba(232, 232, 232, 0.6); 
+            }
+        }
+        
+        @keyframes moonReflection {
+            0%, 100% { 
+                opacity: 0.3; 
+                transform: translateX(-50%) scaleY(1); 
+            }
+            50% { 
+                opacity: 0.7; 
+                transform: translateX(-50%) scaleY(1.2); 
+            }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            nav {
+                top: 1rem;
+                right: 1rem;
+                left: 1rem;
+                justify-content: center;
+                gap: 1rem;
+                padding: 0.8rem 1rem;
+            }
+            
+            .works-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .work-card {
+                padding: 1.5rem;
+            }
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Work Modal */
+        .work-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.5s var(--meditation);
+        }
+        
+        .work-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-header {
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(232, 232, 232, 0.1);
+        }
+        
+        .modal-title {
+            color: var(--zen-white);
+            font-size: 1.5rem;
+            font-weight: 300;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--zen-silver);
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: all 0.3s var(--breathing);
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            color: var(--zen-accent);
+            background: rgba(212, 175, 55, 0.1);
+            transform: rotate(90deg);
+        }
+        
+        .modal-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .work-canvas {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, var(--zen-charcoal) 0%, var(--zen-black) 100%);
+        }
+        
+        /* Selection styling */
+        ::selection {
+            background: rgba(212, 175, 55, 0.3);
+            color: var(--zen-white);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="zen-canvas"></canvas>
+    
+    <nav>
+        <a href="#works" class="nav-item">作品</a>
+        <a href="#philosophy" class="nav-item">哲学</a>
+        <a href="#contact" class="nav-item">結縁</a>
+    </nav>
+    
+    <section class="hero">
+        <h1 class="hero-title">Digital Zen Garden</h1>
+        <p class="hero-subtitle">技術と瞑想の交差点で生まれる美的実験</p>
+        <div class="scroll-indicator">
+            <div class="scroll-line"></div>
+            <span style="font-size: 0.8rem; color: var(--zen-silver);">scroll</span>
+        </div>
+    </section>
+    
+    <section id="works" class="works-section">
+        <h2 class="section-title">技術見本・実験ラボラトリー</h2>
+        <div class="works-grid">
+            <div class="work-card">
+                <div class="work-preview">
+                    <div class="mandala-preview"></div>
+                </div>
+                <h3 class="work-title">曼荼羅生成システム</h3>
+                <p class="work-description">Three.jsとWebGLシェーダーを用いた動的曼荼羅の生成。数学的美と禅的瞑想の融合を探求。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Three.js</span>
+                    <span class="tech-tag">GLSL</span>
+                    <span class="tech-tag">Canvas</span>
+                </div>
+            </div>
+            
+            <div class="work-card">
+                <div class="work-preview">
+                    <div class="geometry-preview"></div>
+                </div>
+                <h3 class="work-title">幾何学瞑想</h3>
+                <p class="work-description">SVGとCSSアニメーションによる幾何学パターンの探求。黄金比と自然数列の視覚化。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">SVG</span>
+                    <span class="tech-tag">CSS</span>
+                    <span class="tech-tag">JavaScript</span>
+                </div>
+            </div>
+            
+            <div class="work-card">
+                <div class="work-preview">
+                    <div class="zen-garden-preview"></div>
+                </div>
+                <h3 class="work-title">デジタル枯山水</h3>
+                <p class="work-description">パーティクルシステムとノイズ関数を用いた、インタラクティブな砂庭のシミュレーション。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">WebGL</span>
+                    <span class="tech-tag">Noise</span>
+                    <span class="tech-tag">Physics</span>
+                </div>
+            </div>
+            
+            <div class="work-card">
+                <div class="work-preview">
+                    <div class="mandala-preview" style="animation-duration: 25s;"></div>
+                </div>
+                <h3 class="work-title">呼吸するインターフェース</h3>
+                <p class="work-description">生体リズムに同調するUI実験。イージング関数と時間を用いた有機的なアニメーション。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">React</span>
+                    <span class="tech-tag">Framer Motion</span>
+                    <span class="tech-tag">WebAPI</span>
+                </div>
+            </div>
+            
+            <div class="work-card">
+                <div class="work-preview">
+                    <div class="geometry-preview" style="clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);"></div>
+                </div>
+                <h3 class="work-title">音の視覚化</h3>
+                <p class="work-description">Web Audio APIを用いた音響の視覚的表現。周波数解析とリアルタイム描画の実験。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Web Audio</span>
+                    <span class="tech-tag">Canvas 2D</span>
+                    <span class="tech-tag">FFT</span>
+                </div>
+            </div>
+            
+            <div class="work-card">
+                <div class="work-preview">
+                    <div class="zen-garden-preview" style="animation-duration: 6s;"></div>
+                </div>
+                <h3 class="work-title">プロシージャルアート</h3>
+                <p class="work-description">アルゴリズムによる自動生成アート。ランダム性と制御の絶妙なバランスを追求。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">p5.js</span>
+                    <span class="tech-tag">Algorithm</span>
+                    <span class="tech-tag">Generative</span>
+                </div>
+            </div>
+            
+            <!-- Advanced Technical Demos -->
+            <div class="work-card advanced">
+                <div class="work-preview">
+                    <div class="fractal-preview"></div>
+                </div>
+                <h3 class="work-title">フラクタル宇宙</h3>
+                <p class="work-description">マンデルブロ集合とジュリア集合の数学的美。無限の自己相似構造を探求。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Complex Math</span>
+                    <span class="tech-tag">GLSL</span>
+                    <span class="tech-tag">WebGL2</span>
+                </div>
+            </div>
+            
+            <div class="work-card advanced">
+                <div class="work-preview">
+                    <div class="cellular-preview"></div>
+                </div>
+                <h3 class="work-title">セルオートマトン</h3>
+                <p class="work-description">Conway's Game of Lifeと禅的パターン進化。単純ルールから生まれる複雑美。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Cellular Automata</span>
+                    <span class="tech-tag">Algorithm</span>
+                    <span class="tech-tag">Pattern</span>
+                </div>
+            </div>
+            
+            <div class="work-card advanced">
+                <div class="work-preview">
+                    <div class="noise-preview"></div>
+                </div>
+                <h3 class="work-title">パーリンノイズランドスケープ</h3>
+                <p class="work-description">自然的地形生成とリアルタイム雲シミュレーション。プロシージャル地形美学。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Perlin Noise</span>
+                    <span class="tech-tag">Procedural</span>
+                    <span class="tech-tag">Terrain</span>
+                </div>
+            </div>
+            
+            <div class="work-card advanced">
+                <div class="work-preview">
+                    <div class="lsystem-preview"></div>
+                </div>
+                <h3 class="work-title">L-System植物成長</h3>
+                <p class="work-description">アルゴリズムによる植物成長パターンの模倣。再帰的美の探求。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">L-System</span>
+                    <span class="tech-tag">Recursive</span>
+                    <span class="tech-tag">Biology</span>
+                </div>
+            </div>
+            
+            <div class="work-card advanced">
+                <div class="work-preview">
+                    <div class="sutra-preview"></div>
+                </div>
+                <h3 class="work-title">般若心経ビジュアライザー</h3>
+                <p class="work-description">文字粒子の舞い散りと禅的アニメーション。古典と現代技術の融合。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Typography</span>
+                    <span class="tech-tag">Particle</span>
+                    <span class="tech-tag">文字解析</span>
+                </div>
+            </div>
+            
+            <div class="work-card advanced">
+                <div class="work-preview">
+                    <div class="audio-reactive-preview"></div>
+                </div>
+                <h3 class="work-title">リアルタイム音響反応</h3>
+                <p class="work-description">マイク入力による動的ビジュアルエフェクト。音と光の共鳴実験。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">WebRTC</span>
+                    <span class="tech-tag">Real-time</span>
+                    <span class="tech-tag">Audio Analysis</span>
+                </div>
+            </div>
+            
+            <div class="work-card advanced">
+                <div class="work-preview">
+                    <div class="meditation-preview"></div>
+                </div>
+                <h3 class="work-title">呼吸瞑想ガイド</h3>
+                <p class="work-description">4-7-8呼吸法の視覚的ガイダンス。科学的瞑想技術の実装。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Meditation</span>
+                    <span class="tech-tag">Biometric</span>
+                    <span class="tech-tag">Wellness</span>
+                </div>
+            </div>
+            
+            <div class="work-card advanced">
+                <div class="work-preview">
+                    <div class="physics-preview"></div>
+                </div>
+                <h3 class="work-title">物理シミュレーション禅庭</h3>
+                <p class="work-description">リアルタイム物理エンジンによる石庭シミュレーション。重力と美の調和。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Physics Engine</span>
+                    <span class="tech-tag">Collision</span>
+                    <span class="tech-tag">Simulation</span>
+                </div>
+            </div>
+            
+            <!-- Zen Aesthetic Demos -->
+            <div class="work-card zen">
+                <div class="work-preview">
+                    <div class="ripple-preview"></div>
+                </div>
+                <h3 class="work-title">一滴の波紋</h3>
+                <p class="work-description">水滴が落ちて広がる波紋の禅的シミュレーション。静寂の中の動き。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Wave Physics</span>
+                    <span class="tech-tag">Circular Motion</span>
+                    <span class="tech-tag">禅美学</span>
+                </div>
+            </div>
+            
+            <div class="work-card zen">
+                <div class="work-preview">
+                    <div class="rain-preview"></div>
+                </div>
+                <h3 class="work-title">浮世絵の雨</h3>
+                <p class="work-description">歌川広重の雨表現をデジタルで再現。伝統美術と現代技術の融合。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Ukiyo-e</span>
+                    <span class="tech-tag">Traditional Art</span>
+                    <span class="tech-tag">雨表現</span>
+                </div>
+            </div>
+            
+            <div class="work-card zen">
+                <div class="work-preview">
+                    <div class="ink-preview"></div>
+                </div>
+                <h3 class="work-title">墨絵の滲み</h3>
+                <p class="work-description">墨が和紙に滲む瞬間の美的表現。書道の精神性をデジタルで。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Ink Simulation</span>
+                    <span class="tech-tag">Fluid Dynamics</span>
+                    <span class="tech-tag">書道</span>
+                </div>
+            </div>
+            
+            <div class="work-card zen">
+                <div class="work-preview">
+                    <div class="sakura-preview"></div>
+                </div>
+                <h3 class="work-title">桜吹雪</h3>
+                <p class="work-description">散りゆく桜の花びらの物理シミュレーション。無常の美。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Particle Physics</span>
+                    <span class="tech-tag">Wind Simulation</span>
+                    <span class="tech-tag">花見</span>
+                </div>
+            </div>
+            
+            <div class="work-card zen">
+                <div class="work-preview">
+                    <div class="bamboo-preview"></div>
+                </div>
+                <h3 class="work-title">竹林の風</h3>
+                <p class="work-description">風に揺れる竹林の音と光の表現。自然のリズムを感じる。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Procedural Animation</span>
+                    <span class="tech-tag">Sound Synthesis</span>
+                    <span class="tech-tag">竹林</span>
+                </div>
+            </div>
+            
+            <div class="work-card zen">
+                <div class="work-preview">
+                    <div class="moonlight-preview"></div>
+                </div>
+                <h3 class="work-title">月光の道</h3>
+                <p class="work-description">水面に映る月光のレイトレーシング。夜の静寂美。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Ray Tracing</span>
+                    <span class="tech-tag">Water Reflection</span>
+                    <span class="tech-tag">月見</span>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+            <section id="philosophy" class="philosophy-section">
+        <h2 class="section-title">日本美学とデジタル技術の融合</h2>
+        <div class="philosophy-text">
+            一滴の水が湖面に落ちる瞬間。雨が斜めに降る浮世絵の美。<br>
+            墨が和紙に滲む書道の精神。散りゆく桜の無常観。<br>
+            風に揺れる竹林の音。水面に映る月光の道。<br><br>
+            
+            古来より日本人が愛でてきた自然の美を、現代のデジタル技術で再現する。<br>
+            物理エンジン、パーティクルシステム、レイトレーシング——<br>
+            最新の技術を使って、千年変わらない美の本質を表現する。<br><br>
+            
+            これは技術者としての修行であり、日本人としての誇りである。<br>
+            コードに込めた魂が、画面の向こうで静かに美を語りかける。
+        </div>
+    </section>
+    
+    <footer id="contact">
+        <div class="footer-content">
+            <p>© 2025 Digital Zen Garden - 継続的な美的探求の記録</p>
+        </div>
+    </footer>
+    
+    <!-- Work Modal -->
+    <div id="workModal" class="work-modal">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">作品タイトル</h3>
+            <button class="close-btn" id="closeModal">×</button>
+        </div>
+        <div class="modal-content">
+            <canvas class="work-canvas" id="workCanvas"></canvas>
+        </div>
+    </div>
+    
+    <script>
+        // Works Data - 実際の作品定義
+        const works = [
+            {
+                id: 'mandala',
+                title: '曼荼羅生成システム',
+                type: 'threejs',
+                description: 'Three.jsとWebGLシェーダーを用いた動的曼荼羅の生成',
+                category: 'basic'
+            },
+            {
+                id: 'geometry',
+                title: '幾何学瞑想',
+                type: 'svg',
+                description: 'SVGとCSSアニメーションによる幾何学パターンの探求',
+                category: 'basic'
+            },
+            {
+                id: 'zen-garden',
+                title: 'デジタル枯山水',
+                type: 'particles',
+                description: 'パーティクルシステムとノイズ関数を用いた砂庭シミュレーション',
+                category: 'basic'
+            },
+            {
+                id: 'breathing',
+                title: '呼吸するインターフェース',
+                type: 'breathing',
+                description: '生体リズムに同調するUI実験',
+                category: 'basic'
+            },
+            {
+                id: 'audio-viz',
+                title: '音の視覚化',
+                type: 'audio',
+                description: 'Web Audio APIを用いた音響の視覚的表現',
+                category: 'basic'
+            },
+            {
+                id: 'procedural',
+                title: 'プロシージャルアート',
+                type: 'generative',
+                description: 'アルゴリズムによる自動生成アート',
+                category: 'basic'
+            },
+            {
+                id: 'fractal',
+                title: 'フラクタル宇宙',
+                type: 'fractal',
+                description: 'マンデルブロ集合とジュリア集合の数学的美',
+                category: 'advanced'
+            },
+            {
+                id: 'cellular',
+                title: 'セルオートマトン',
+                type: 'cellular',
+                description: 'Conway\'s Game of Lifeと禅的パターン進化',
+                category: 'advanced'
+            },
+            {
+                id: 'noise-art',
+                title: 'パーリンノイズランドスケープ',
+                type: 'noise',
+                description: '自然的地形生成とリアルタイム雲シミュレーション',
+                category: 'advanced'
+            },
+            {
+                id: 'l-system',
+                title: 'L-System植物成長',
+                type: 'lsystem',
+                description: 'アルゴリズムによる植物成長パターンの模倣',
+                category: 'advanced'
+            },
+            {
+                id: 'sutra-viz',
+                title: '般若心経ビジュアライザー',
+                type: 'sutra',
+                description: '文字粒子の舞い散りと禅的アニメーション',
+                category: 'advanced'
+            },
+            {
+                id: 'realtime-audio',
+                title: 'リアルタイム音響反応',
+                type: 'realtime-audio',
+                description: 'マイク入力による動的ビジュアルエフェクト',
+                category: 'advanced'
+            },
+            {
+                id: 'meditation-guide',
+                title: '呼吸瞑想ガイド',
+                type: 'meditation',
+                description: '4-7-8呼吸法の視覚的ガイダンス',
+                category: 'advanced'
+            },
+            {
+                id: 'physics-zen',
+                title: '物理シミュレーション禅庭',
+                type: 'physics',
+                description: 'リアルタイム物理エンジンによる石庭シミュレーション',
+                category: 'advanced'
+            },
+            {
+                id: 'water-ripple',
+                title: '一滴の波紋',
+                type: 'ripple',
+                description: '水滴が落ちて広がる波紋の禅的シミュレーション',
+                category: 'zen'
+            },
+            {
+                id: 'ukiyo-rain',
+                title: '浮世絵の雨',
+                type: 'rain',
+                description: '歌川広重の雨表現をデジタルで再現',
+                category: 'zen'
+            },
+            {
+                id: 'ink-bleeding',
+                title: '墨絵の滲み',
+                type: 'ink',
+                description: '墨が和紙に滲む瞬間の美的表現',
+                category: 'zen'
+            },
+            {
+                id: 'sakura-fall',
+                title: '桜吹雪',
+                type: 'sakura',
+                description: '散りゆく桜の花びらの物理シミュレーション',
+                category: 'zen'
+            },
+            {
+                id: 'bamboo-wind',
+                title: '竹林の風',
+                type: 'bamboo',
+                description: '風に揺れる竹林の音と光の表現',
+                category: 'zen'
+            },
+            {
+                id: 'moon-light',
+                title: '月光の道',
+                type: 'moonlight',
+                description: '水面に映る月光のレイトレーシング',
+                category: 'zen'
+            }
+        ];
+        
+        // Three.js Background Animation
+        let scene, camera, renderer, particles;
+        
+        // Modal variables
+        let modalScene, modalCamera, modalRenderer;
+        let currentWork = null;
+        let modalAnimationId = null;
+        
+        function initThreeJS() {
+            const canvas = document.getElementById('zen-canvas');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            
+            // Create particle system
+            const geometry = new THREE.BufferGeometry();
+            const particleCount = 200;
+            const positions = new Float32Array(particleCount * 3);
+            const velocities = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 20;
+                positions[i + 1] = (Math.random() - 0.5) * 20;
+                positions[i + 2] = (Math.random() - 0.5) * 20;
+                
+                velocities[i] = (Math.random() - 0.5) * 0.01;
+                velocities[i + 1] = (Math.random() - 0.5) * 0.01;
+                velocities[i + 2] = (Math.random() - 0.5) * 0.01;
+            }
+            
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+            
+            const material = new THREE.PointsMaterial({
+                color: 0xd4af37,
+                size: 0.02,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+            
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+            
+            camera.position.z = 10;
+            
+            animate();
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const positions = particles.geometry.attributes.position.array;
+            const velocities = particles.geometry.attributes.velocity.array;
+            
+            for (let i = 0; i < positions.length; i += 3) {
+                positions[i] += velocities[i];
+                positions[i + 1] += velocities[i + 1];
+                positions[i + 2] += velocities[i + 2];
+                
+                // Wrap around edges
+                if (Math.abs(positions[i]) > 10) velocities[i] *= -1;
+                if (Math.abs(positions[i + 1]) > 10) velocities[i + 1] *= -1;
+                if (Math.abs(positions[i + 2]) > 10) velocities[i + 2] *= -1;
+            }
+            
+            particles.geometry.attributes.position.needsUpdate = true;
+            particles.rotation.y += 0.001;
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Modal Functions
+        function openWorkModal(workIndex) {
+            const work = works[workIndex];
+            currentWork = work;
+            
+            const modal = document.getElementById('workModal');
+            const title = document.getElementById('modalTitle');
+            const canvas = document.getElementById('workCanvas');
+            
+            title.textContent = work.title;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Initialize work-specific content
+            setTimeout(() => {
+                initWorkContent(work, canvas);
+            }, 500);
+        }
+        
+        function closeWorkModal() {
+            const modal = document.getElementById('workModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Clean up
+            if (modalAnimationId) {
+                cancelAnimationFrame(modalAnimationId);
+                modalAnimationId = null;
+            }
+            
+            if (modalRenderer) {
+                modalRenderer.dispose();
+                modalRenderer = null;
+            }
+            
+            currentWork = null;
+        }
+        
+        function initWorkContent(work, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            
+            switch (work.type) {
+                case 'threejs':
+                    initMandalaWork(canvas);
+                    break;
+                case 'svg':
+                    initGeometryWork(canvas);
+                    break;
+                case 'particles':
+                    initZenGardenWork(canvas);
+                    break;
+                case 'breathing':
+                    initBreathingWork(canvas);
+                    break;
+                case 'audio':
+                    initAudioVizWork(canvas);
+                    break;
+                case 'generative':
+                    initGenerativeWork(canvas);
+                    break;
+                case 'fractal':
+                    initFractalWork(canvas);
+                    break;
+                case 'cellular':
+                    initCellularWork(canvas);
+                    break;
+                case 'noise':
+                    initNoiseWork(canvas);
+                    break;
+                case 'lsystem':
+                    initLSystemWork(canvas);
+                    break;
+                case 'sutra':
+                    initSutraWork(canvas);
+                    break;
+                case 'realtime-audio':
+                    initRealtimeAudioWork(canvas);
+                    break;
+                case 'meditation':
+                    initMeditationWork(canvas);
+                    break;
+                case 'physics':
+                    initPhysicsWork(canvas);
+                    break;
+                case 'ripple':
+                    initRippleWork(canvas);
+                    break;
+                case 'rain':
+                    initRainWork(canvas);
+                    break;
+                case 'ink':
+                    initInkWork(canvas);
+                    break;
+                case 'sakura':
+                    initSakuraWork(canvas);
+                    break;
+                case 'bamboo':
+                    initBambooWork(canvas);
+                    break;
+                case 'moonlight':
+                    initMoonlightWork(canvas);
+                    break;
+            }
+        }
+        
+        // Work 1: Mandala Generator (Canvas 2D version)
+        function initMandalaWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            function drawMandala() {
+                if (!currentWork || currentWork.type !== 'threejs') return;
+                
+                // 和紙のような背景
+                ctx.fillStyle = '#f8f8f0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const time = Date.now() * 0.001;
+                
+                // 曼荼羅の層を描画
+                const layers = 8;
+                for (let layer = 0; layer < layers; layer++) {
+                    const radius = (layer + 1) * 25;
+                    const segments = 24;
+                    
+                    // 層の回転
+                    const layerRotation = time * (layer % 2 === 0 ? 0.3 : -0.3) + (layer * Math.PI) / 12;
+                    
+                    // 墨の濃淡を計算
+                    const intensity = 0.1 + (layer * 0.1);
+                    const grayValue = Math.floor(45 * intensity);
+                    
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(layerRotation);
+                    
+                    // リング状の曼荼羅を描画
+                    ctx.beginPath();
+                    for (let i = 0; i <= segments; i++) {
+                        const angle = (i / segments) * Math.PI * 2;
+                        const innerRadius = radius - 12;
+                        const outerRadius = radius;
+                        
+                        const x1 = Math.cos(angle) * innerRadius;
+                        const y1 = Math.sin(angle) * innerRadius;
+                        const x2 = Math.cos(angle) * outerRadius;
+                        const y2 = Math.sin(angle) * outerRadius;
+                        
+                        if (i === 0) {
+                            ctx.moveTo(x2, y2);
+                        } else {
+                            ctx.lineTo(x2, y2);
+                        }
+                    }
+                    
+                    // 内側の円に戻る
+                    for (let i = segments; i >= 0; i--) {
+                        const angle = (i / segments) * Math.PI * 2;
+                        const innerRadius = radius - 12;
+                        
+                        const x1 = Math.cos(angle) * innerRadius;
+                        const y1 = Math.sin(angle) * innerRadius;
+                        
+                        ctx.lineTo(x1, y1);
+                    }
+                    
+                    ctx.closePath();
+                    ctx.fillStyle = `rgba(${grayValue}, ${grayValue}, ${grayValue + 5}, 0.7)`;
+                    ctx.fill();
+                    ctx.strokeStyle = `rgba(${grayValue - 10}, ${grayValue - 10}, ${grayValue - 10}, 0.5)`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                }
+                
+                // 中央の装飾要素（12個のコーン状装飾）
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i / 12) * Math.PI * 2 + time * 0.5;
+                    const distance = 40;
+                    
+                    const x = centerX + Math.cos(angle) * distance;
+                    const y = centerY + Math.sin(angle) * distance;
+                    
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(angle + Math.PI / 2);
+                    
+                    // コーン形状を三角形で描画
+                    ctx.beginPath();
+                    ctx.moveTo(0, -15);
+                    ctx.lineTo(-8, 15);
+                    ctx.lineTo(8, 15);
+                    ctx.closePath();
+                    
+                    ctx.fillStyle = 'rgba(45, 45, 45, 0.8)'; // 墨色
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(26, 26, 26, 0.9)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                }
+                
+                // 中心の円
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(45, 45, 45, 0.9)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(26, 26, 26, 1)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 中心の小さな点（金色）
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(212, 175, 55, 0.9)';
+                ctx.fill();
+                
+                // 放射状の線
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2 + time * 0.2;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(
+                        centerX + Math.cos(angle) * 20,
+                        centerY + Math.sin(angle) * 20
+                    );
+                    ctx.lineTo(
+                        centerX + Math.cos(angle) * 35,
+                        centerY + Math.sin(angle) * 35
+                    );
+                    
+                    ctx.strokeStyle = 'rgba(74, 74, 74, 0.6)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                
+                modalAnimationId = requestAnimationFrame(drawMandala);
+            }
+            
+            drawMandala();
+        }
+        
+        // Work 2: Geometry Meditation
+        function initGeometryWork(canvas) {
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // 和風の色彩配列
+            const zenColors = [
+                'rgba(45, 45, 45, 0.8)',      // 墨色
+                'rgba(138, 138, 138, 0.7)',   // 銀色
+                'rgba(212, 175, 55, 0.8)',    // 金色  
+                'rgba(74, 74, 118, 0.7)',     // 藍色
+                'rgba(95, 95, 95, 0.6)',      // 薄墨色
+                'rgba(160, 160, 160, 0.6)'    // 薄銀色
+            ];
+            
+            let animationRunning = true;
+            
+            function drawGeometry() {
+                // 現在の作品チェック
+                if (!currentWork || currentWork.type !== 'svg' || !animationRunning) {
+                    return;
+                }
+                
+                try {
+                    // 和紙背景
+                    ctx.fillStyle = '#f8f8f0';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    const time = Date.now() * 0.001;
+                    
+                    // 6つの多角形を描画
+                    for (let layer = 0; layer < 6; layer++) {
+                        const radius = 40 + layer * 45;
+                        const sides = 3 + layer;
+                        const rotation = time * (layer % 2 === 0 ? 0.2 : -0.2);
+                        
+                        // 変形行列を使わずに直接座標計算
+                        const cos = Math.cos(rotation);
+                        const sin = Math.sin(rotation);
+                        
+                        ctx.beginPath();
+                        
+                        for (let i = 0; i <= sides; i++) {
+                            const angle = (i / sides) * Math.PI * 2;
+                            const localX = Math.cos(angle) * radius;
+                            const localY = Math.sin(angle) * radius;
+                            
+                            // 回転変換を手動で適用
+                            const x = centerX + (localX * cos - localY * sin);
+                            const y = centerY + (localX * sin + localY * cos);
+                            
+                            if (i === 0) {
+                                ctx.moveTo(x, y);
+                            } else {
+                                ctx.lineTo(x, y);
+                            }
+                        }
+                        
+                        // スタイル適用
+                        ctx.strokeStyle = zenColors[layer];
+                        ctx.lineWidth = Math.max(1, 4 - layer * 0.5);
+                        ctx.stroke();
+                        
+                        // 角の装飾点
+                        if (layer < 4) {
+                            ctx.fillStyle = zenColors[layer];
+                            for (let i = 0; i < sides; i++) {
+                                const angle = (i / sides) * Math.PI * 2;
+                                const localX = Math.cos(angle) * radius;
+                                const localY = Math.sin(angle) * radius;
+                                
+                                const x = centerX + (localX * cos - localY * sin);
+                                const y = centerY + (localX * sin + localY * cos);
+                                
+                                ctx.beginPath();
+                                ctx.arc(x, y, 2, 0, Math.PI * 2);
+                                ctx.fill();
+                            }
+                        }
+                    }
+                    
+                    // 中心の円相
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(45, 45, 45, 0.9)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, 2, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(212, 175, 55, 0.9)';
+                    ctx.fill();
+                    
+                } catch (error) {
+                    console.error('Geometry animation error:', error);
+                    animationRunning = false;
+                    return;
+                }
+                
+                // 次のフレームをリクエスト
+                if (animationRunning && currentWork && currentWork.type === 'svg') {
+                    modalAnimationId = requestAnimationFrame(drawGeometry);
+                }
+            }
+            
+            // アニメーション開始
+            drawGeometry();
+            
+            // クリーンアップ関数
+            return function cleanup() {
+                animationRunning = false;
+                if (modalAnimationId) {
+                    cancelAnimationFrame(modalAnimationId);
+                    modalAnimationId = null;
+                }
+            };
+        }
+        
+        // Work 3: Zen Garden
+        function initZenGardenWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const particles = [];
+            const particleCount = 100;
+            
+            // Initialize particles
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    size: Math.random() * 3 + 1,
+                    life: Math.random()
+                });
+            }
+            
+            function drawZenGarden() {
+                if (!currentWork || currentWork.type !== 'particles') return;
+                
+                // 和紙のような白背景
+                ctx.fillStyle = 'rgba(248, 248, 240, 0.15)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                particles.forEach(particle => {
+                    // Update particle
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.life += 0.01;
+                    
+                    // Wrap around edges
+                    if (particle.x < 0) particle.x = canvas.width;
+                    if (particle.x > canvas.width) particle.x = 0;
+                    if (particle.y < 0) particle.y = canvas.height;
+                    if (particle.y > canvas.height) particle.y = 0;
+                    
+                    // Draw particle (墨色)
+                    const alpha = Math.sin(particle.life) * 0.5 + 0.5;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(45, 45, 45, ${alpha * 0.8})`;
+                    ctx.fill();
+                    
+                    // Draw connections (墨色の線)
+                    particles.forEach(other => {
+                        const distance = Math.sqrt(
+                            Math.pow(particle.x - other.x, 2) + 
+                            Math.pow(particle.y - other.y, 2)
+                        );
+                        
+                        if (distance < 80) {
+                            ctx.beginPath();
+                            ctx.moveTo(particle.x, particle.y);
+                            ctx.lineTo(other.x, other.y);
+                            ctx.strokeStyle = `rgba(26, 26, 26, ${(1 - distance / 80) * 0.4})`;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    });
+                });
+                
+                modalAnimationId = requestAnimationFrame(drawZenGarden);
+            }
+            
+            drawZenGarden();
+        }
+        
+        // Work 4: Breathing Interface
+        function initBreathingWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            function drawBreathing() {
+                if (!currentWork || currentWork.type !== 'breathing') return;
+                
+                // 和紙のような背景
+                ctx.fillStyle = '#f8f8f0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const time = Date.now() * 0.001;
+                const breathe = Math.sin(time * 0.5) * 0.3 + 0.7; // 0.4 to 1.0
+                
+                // Draw breathing circles (墨色の円)
+                for (let i = 0; i < 5; i++) {
+                    const radius = (i + 1) * 30 * breathe;
+                    const alpha = (1 - i * 0.15) * breathe * 0.6;
+                    
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(45, 45, 45, ${alpha})`;  // 墨色
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                
+                // Center pulse (墨色の中心)
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 10 * breathe, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(26, 26, 26, ${breathe})`;  // 濃い墨色
+                ctx.fill();
+                
+                modalAnimationId = requestAnimationFrame(drawBreathing);
+            }
+            
+            drawBreathing();
+        }
+        
+        // Work 5: Audio Visualization
+        function initAudioVizWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const bars = 64;
+            const barWidth = canvas.width / bars;
+            
+            function drawAudioViz() {
+                if (!currentWork || currentWork.type !== 'audio') return;
+                
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const time = Date.now() * 0.001;
+                
+                for (let i = 0; i < bars; i++) {
+                    const frequency = (i / bars) * 10;
+                    const amplitude = Math.sin(time * 3 + frequency) * 0.5 + 0.5;
+                    const height = amplitude * canvas.height * 0.8;
+                    
+                    const hue = (i / bars) * 360 + time * 50;
+                    ctx.fillStyle = `hsla(${hue}, 70%, 60%, 0.8)`;
+                    
+                    ctx.fillRect(
+                        i * barWidth, 
+                        canvas.height - height, 
+                        barWidth - 2, 
+                        height
+                    );
+                }
+                
+                modalAnimationId = requestAnimationFrame(drawAudioViz);
+            }
+            
+            drawAudioViz();
+        }
+        
+        // Work 6: Generative Art
+        function initGenerativeWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const points = [];
+            const pointCount = 50;
+            
+            // Initialize points
+            for (let i = 0; i < pointCount; i++) {
+                points.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 3,
+                    vy: (Math.random() - 0.5) * 3,
+                    size: Math.random() * 4 + 2,
+                    intensity: Math.random() * 0.5 + 0.5  // 墨の濃淡用
+                });
+            }
+            
+            function drawGenerative() {
+                if (!currentWork || currentWork.type !== 'generative') return;
+                
+                // 和紙のような背景
+                ctx.fillStyle = 'rgba(248, 248, 240, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                points.forEach((point, index) => {
+                    // Update position
+                    point.x += point.vx;
+                    point.y += point.vy;
+                    
+                    // Bounce off edges with damping
+                    if (point.x < 0 || point.x > canvas.width) {
+                        point.vx *= -0.9;
+                        point.x = Math.max(0, Math.min(canvas.width, point.x));
+                    }
+                    if (point.y < 0 || point.y > canvas.height) {
+                        point.vy *= -0.9;
+                        point.y = Math.max(0, Math.min(canvas.height, point.y));
+                    }
+                    
+                    // Slowly change intensity for breathing effect
+                    point.intensity += (Math.random() - 0.5) * 0.02;
+                    point.intensity = Math.max(0.2, Math.min(1, point.intensity));
+                    
+                    // Draw point (墨色の点)
+                    const alpha = point.intensity * 0.8;
+                    const grayValue = 45 * point.intensity;  // 墨の濃淡
+                    
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, point.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${grayValue}, ${grayValue}, ${grayValue}, ${alpha})`;
+                    ctx.fill();
+                    
+                    // Add ink bleeding effect around each point
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, point.size * 2, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${grayValue * 0.7}, ${grayValue * 0.7}, ${grayValue * 0.7}, ${alpha * 0.3})`;
+                    ctx.fill();
+                    
+                    // Draw lines to nearby points (墨色の線)
+                    points.slice(index + 1).forEach(other => {
+                        const distance = Math.sqrt(
+                            Math.pow(point.x - other.x, 2) + 
+                            Math.pow(point.y - other.y, 2)
+                        );
+                        
+                        if (distance < 120) {
+                            const connectionAlpha = (1 - distance / 120) * 0.4;
+                            const avgIntensity = (point.intensity + other.intensity) / 2;
+                            const lineGray = 26 + (avgIntensity * 30);  // 濃い墨色から薄墨色
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(point.x, point.y);
+                            ctx.lineTo(other.x, other.y);
+                            ctx.strokeStyle = `rgba(${lineGray}, ${lineGray}, ${lineGray}, ${connectionAlpha * avgIntensity})`;
+                            
+                            // Line width varies with intensity
+                            ctx.lineWidth = 0.5 + avgIntensity * 1.5;
+                            ctx.stroke();
+                            
+                            // Add subtle ink spreading effect on lines
+                            if (distance < 80 && Math.random() > 0.9) {
+                                const midX = (point.x + other.x) / 2;
+                                const midY = (point.y + other.y) / 2;
+                                
+                                ctx.beginPath();
+                                ctx.arc(midX, midY, Math.random() * 3 + 1, 0, Math.PI * 2);
+                                ctx.fillStyle = `rgba(${lineGray}, ${lineGray}, ${lineGray}, ${connectionAlpha * 0.5})`;
+                                ctx.fill();
+                            }
+                        }
+                    });
+                });
+                
+                modalAnimationId = requestAnimationFrame(drawGenerative);
+            }
+            
+            drawGenerative();
+        }
+        
+        // Work 7: Fractal Universe
+        function initFractalWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const maxIterations = 100;
+            
+            function drawFractal() {
+                if (!currentWork || currentWork.type !== 'fractal') return;
+                
+                const imageData = ctx.createImageData(canvas.width, canvas.height);
+                const data = imageData.data;
+                const time = Date.now() * 0.0001;
+                
+                const zoom = 0.5 + Math.sin(time) * 0.3;
+                const offsetX = Math.cos(time * 0.7) * 0.1;
+                const offsetY = Math.sin(time * 0.5) * 0.1;
+                
+                for (let x = 0; x < canvas.width; x++) {
+                    for (let y = 0; y < canvas.height; y++) {
+                        const zx = (x - centerX) / (centerX * zoom) + offsetX;
+                        const zy = (y - centerY) / (centerY * zoom) + offsetY;
+                        
+                        let cx = zx, cy = zy;
+                        let iterations = 0;
+                        
+                        while (cx * cx + cy * cy < 4 && iterations < maxIterations) {
+                            const temp = cx * cx - cy * cy + zx;
+                            cy = 2 * cx * cy + zy;
+                            cx = temp;
+                            iterations++;
+                        }
+                        
+                        const pixelIndex = (y * canvas.width + x) * 4;
+                        if (iterations === maxIterations) {
+                            data[pixelIndex] = 0;
+                            data[pixelIndex + 1] = 0;
+                            data[pixelIndex + 2] = 0;
+                        } else {
+                            const hue = (iterations / maxIterations) * 360 + time * 100;
+                            const rgb = hslToRgb(hue % 360, 0.8, 0.6);
+                            data[pixelIndex] = rgb[0];
+                            data[pixelIndex + 1] = rgb[1];
+                            data[pixelIndex + 2] = rgb[2];
+                        }
+                        data[pixelIndex + 3] = 255;
+                    }
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+                modalAnimationId = requestAnimationFrame(drawFractal);
+            }
+            
+            function hslToRgb(h, s, l) {
+                h /= 360;
+                const a = s * Math.min(l, 1 - l);
+                const f = n => {
+                    const k = (n + h / (1/12)) % 12;
+                    return l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                };
+                return [Math.floor(f(0) * 255), Math.floor(f(8) * 255), Math.floor(f(4) * 255)];
+            }
+            
+            drawFractal();
+        }
+        
+        // Work 8: Cellular Automaton
+        function initCellularWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const cellSize = 8;
+            const cols = Math.floor(canvas.width / cellSize);
+            const rows = Math.floor(canvas.height / cellSize);
+            
+            let grid = [];
+            let nextGrid = [];
+            
+            // Initialize grid
+            for (let i = 0; i < cols; i++) {
+                grid[i] = [];
+                nextGrid[i] = [];
+                for (let j = 0; j < rows; j++) {
+                    grid[i][j] = Math.random() > 0.7 ? 1 : 0;
+                    nextGrid[i][j] = 0;
+                }
+            }
+            
+            function countNeighbors(x, y) {
+                let count = 0;
+                for (let i = -1; i <= 1; i++) {
+                    for (let j = -1; j <= 1; j++) {
+                        const col = (x + i + cols) % cols;
+                        const row = (y + j + rows) % rows;
+                        count += grid[col][row];
+                    }
+                }
+                count -= grid[x][y];
+                return count;
+            }
+            
+            function drawCellular() {
+                if (!currentWork || currentWork.type !== 'cellular') return;
+                
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Calculate next generation
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        const neighbors = countNeighbors(i, j);
+                        
+                        if (grid[i][j] === 1 && (neighbors < 2 || neighbors > 3)) {
+                            nextGrid[i][j] = 0;
+                        } else if (grid[i][j] === 0 && neighbors === 3) {
+                            nextGrid[i][j] = 1;
+                        } else {
+                            nextGrid[i][j] = grid[i][j];
+                        }
+                    }
+                }
+                
+                // Draw cells
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        if (grid[i][j] === 1) {
+                            const alpha = Math.random() * 0.3 + 0.7;
+                            ctx.fillStyle = `rgba(212, 175, 55, ${alpha})`;
+                            ctx.fillRect(i * cellSize, j * cellSize, cellSize - 1, cellSize - 1);
+                        }
+                    }
+                }
+                
+                // Swap grids
+                [grid, nextGrid] = [nextGrid, grid];
+                
+                setTimeout(() => {
+                    modalAnimationId = requestAnimationFrame(drawCellular);
+                }, 100);
+            }
+            
+            drawCellular();
+        }
+        
+        // Work 9: Noise Landscape
+        function initNoiseWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            let time = 0;
+            
+            function noise(x, y, z) {
+                return (Math.sin(x * 0.01 + z) + Math.sin(y * 0.01 + z) + Math.sin((x + y) * 0.005 + z)) / 3;
+            }
+            
+            function drawNoise() {
+                if (!currentWork || currentWork.type !== 'noise') return;
+                
+                time += 0.01;
+                
+                const imageData = ctx.createImageData(canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                for (let x = 0; x < canvas.width; x++) {
+                    for (let y = 0; y < canvas.height; y++) {
+                        const noiseValue = noise(x, y, time);
+                        const height = (noiseValue + 1) / 2;
+                        
+                        const pixelIndex = (y * canvas.width + x) * 4;
+                        
+                        if (y < canvas.height * 0.3) {
+                            // Sky
+                            const skyBlue = Math.floor(100 + height * 50);
+                            data[pixelIndex] = skyBlue - 50;
+                            data[pixelIndex + 1] = skyBlue - 30;
+                            data[pixelIndex + 2] = skyBlue;
+                        } else if (y < canvas.height * 0.7) {
+                            // Mountains
+                            const mountainHeight = canvas.height * (0.4 + height * 0.3);
+                            if (y < mountainHeight) {
+                                data[pixelIndex] = 100 + height * 50;
+                                data[pixelIndex + 1] = 120 + height * 30;
+                                data[pixelIndex + 2] = 80 + height * 40;
+                            } else {
+                                data[pixelIndex] = 30;
+                                data[pixelIndex + 1] = 60;
+                                data[pixelIndex + 2] = 90;
+                            }
+                        } else {
+                            // Ground
+                            data[pixelIndex] = 50 + height * 80;
+                            data[pixelIndex + 1] = 80 + height * 60;
+                            data[pixelIndex + 2] = 30 + height * 50;
+                        }
+                        
+                        data[pixelIndex + 3] = 255;
+                    }
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+                modalAnimationId = requestAnimationFrame(drawNoise);
+            }
+            
+            drawNoise();
+        }
+        
+        // Work 10: L-System Plant
+        function initLSystemWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height * 0.9;
+            let startTime = Date.now();
+            
+            class LSystem {
+                constructor() {
+                    this.axiom = 'F';
+                    this.rules = { 'F': 'F[+F]F[-F]F' };
+                    this.angle = 25.7;
+                    this.generations = 3;  // 少し減らして見やすく
+                }
+                
+                generate() {
+                    let current = this.axiom;
+                    for (let i = 0; i < this.generations; i++) {
+                        let next = '';
+                        for (let char of current) {
+                            next += this.rules[char] || char;
+                        }
+                        current = next;
+                    }
+                    return current;
+                }
+            }
+            
+            function drawLSystem() {
+                if (!currentWork || currentWork.type !== 'lsystem') return;
+                
+                // 和紙のような背景
+                ctx.fillStyle = '#f8f8f0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const elapsed = (Date.now() - startTime) / 1000;  // 経過時間（秒）
+                const cycle = elapsed % 10;  // 10秒サイクルで成長
+                
+                const lsystem = new LSystem();
+                const instructions = lsystem.generate();
+                
+                // 成長の段階を計算（0から1まで）
+                let growthProgress = Math.min(1, cycle / 8);  // 8秒で完全成長
+                if (cycle > 8) {
+                    // 8秒後は一度リセットして新しい成長を開始
+                    startTime = Date.now() - 1000;  // 1秒前に再設定
+                    growthProgress = 0;
+                }
+                
+                const maxInstructions = Math.floor(instructions.length * growthProgress);
+                
+                const stack = [];
+                let x = centerX;
+                let y = centerY;
+                let angle = -90;
+                const length = canvas.height / 100;
+                
+                // 土の表現 (薄墨色の地面)
+                ctx.fillStyle = 'rgba(74, 74, 74, 0.3)';
+                ctx.fillRect(0, canvas.height * 0.85, canvas.width, canvas.height * 0.15);
+                
+                // 根の表現 (成長に合わせて表示)
+                if (growthProgress > 0.1) {
+                    for (let i = 0; i < Math.floor(growthProgress * 5); i++) {
+                        const rootX = centerX + (Math.random() - 0.5) * 60 * growthProgress;
+                        const rootY = canvas.height * 0.9 + Math.random() * 30 * growthProgress;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(centerX, centerY);
+                        ctx.quadraticCurveTo(
+                            centerX + (Math.random() - 0.5) * 40 * growthProgress,
+                            centerY + 20,
+                            rootX,
+                            rootY
+                        );
+                        ctx.strokeStyle = `rgba(74, 74, 74, ${0.4 * growthProgress})`;
+                        ctx.lineWidth = 2 * growthProgress;
+                        ctx.stroke();
+                    }
+                }
+                
+                // 植物の描画
+                let instructionCount = 0;
+                
+                for (let i = 0; i < instructions.length && instructionCount < maxInstructions; i++) {
+                    const char = instructions[i];
+                    
+                    switch (char) {
+                        case 'F':
+                            instructionCount++;
+                            if (instructionCount > maxInstructions) break;
+                            
+                            const newX = x + Math.cos(angle * Math.PI / 180) * length;
+                            const newY = y + Math.sin(angle * Math.PI / 180) * length;
+                            
+                            // 枝の深度によって色と太さを変える
+                            const depth = stack.length;
+                            const alpha = Math.max(0.3, (0.9 - depth * 0.15) * growthProgress);
+                            const lineWidth = Math.max(0.5, (3 - depth * 0.4) * growthProgress);
+                            
+                            ctx.strokeStyle = `rgba(45, 45, 45, ${alpha})`;
+                            ctx.lineWidth = lineWidth;
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(x, y);
+                            ctx.lineTo(newX, newY);
+                            ctx.stroke();
+                            
+                            // 葉っぱを描く (成長後期に表示)
+                            if (depth > 1 && growthProgress > 0.6 && Math.random() > 0.8) {
+                                ctx.save();
+                                ctx.translate(newX, newY);
+                                ctx.rotate((angle + 45) * Math.PI / 180);
+                                
+                                const leafSize = length * 0.8 * growthProgress;
+                                ctx.beginPath();
+                                ctx.ellipse(0, 0, leafSize, leafSize * 0.3, 0, 0, Math.PI * 2);
+                                ctx.fillStyle = `rgba(74, 74, 74, ${alpha * 0.6})`;
+                                ctx.fill();
+                                
+                                ctx.restore();
+                            }
+                            
+                            x = newX;
+                            y = newY;
+                            break;
+                            
+                        case '+':
+                            angle += lsystem.angle;
+                            break;
+                            
+                        case '-':
+                            angle -= lsystem.angle;
+                            break;
+                            
+                        case '[':
+                            stack.push({ x, y, angle });
+                            break;
+                            
+                        case ']':
+                            const state = stack.pop();
+                            if (state) {
+                                x = state.x;
+                                y = state.y;
+                                angle = state.angle;
+                            }
+                            break;
+                    }
+                }
+                
+                // 成長段階の表示
+                ctx.font = '16px "Noto Sans JP"';
+                ctx.fillStyle = 'rgba(45, 45, 45, 0.7)';
+                ctx.textAlign = 'left';
+                ctx.fillText(`成長: ${Math.floor(growthProgress * 100)}%`, 20, 30);
+                
+                modalAnimationId = requestAnimationFrame(drawLSystem);
+            }
+            
+            drawLSystem();
+        }
+        
+        // Work 11: Sutra Visualizer
+        function initSutraWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const sutra = '般若波羅蜜多心経　観自在菩薩行深般若波羅蜜多時照見五蘊皆空度一切苦厄';
+            const particles = [];
+            
+            // Initialize text particles
+            sutra.split('').forEach((char, index) => {
+                particles.push({
+                    char: char,
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    alpha: Math.random(),
+                    size: 12 + Math.random() * 8,
+                    phase: index * 0.1
+                });
+            });
+            
+            function drawSutra() {
+                if (!currentWork || currentWork.type !== 'sutra') return;
+                
+                // 和紙のような背景
+                ctx.fillStyle = 'rgba(248, 248, 240, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const time = Date.now() * 0.001;
+                
+                particles.forEach(particle => {
+                    // Update particle
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.alpha = (Math.sin(time + particle.phase) + 1) / 2;
+                    
+                    // Wrap around
+                    if (particle.x < 0) particle.x = canvas.width;
+                    if (particle.x > canvas.width) particle.x = 0;
+                    if (particle.y < 0) particle.y = canvas.height;
+                    if (particle.y > canvas.height) particle.y = 0;
+                    
+                    // Draw character (墨色の文字)
+                    ctx.save();
+                    ctx.font = `${particle.size}px 'Noto Sans JP'`;
+                    ctx.fillStyle = `rgba(45, 45, 45, ${particle.alpha * 0.8})`;  // 墨色
+                    ctx.textAlign = 'center';
+                    ctx.translate(particle.x, particle.y);
+                    ctx.rotate(time * 0.5 + particle.phase);
+                    ctx.fillText(particle.char, 0, 0);
+                    ctx.restore();
+                });
+                
+                modalAnimationId = requestAnimationFrame(drawSutra);
+            }
+            
+            drawSutra();
+        }
+        
+        // Work 12: Realtime Audio Reactive
+        function initRealtimeAudioWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const bars = 32;
+            const barWidth = canvas.width / bars;
+            let audioData = new Array(bars).fill(0);
+            
+            // Simulate audio data
+            function updateAudioData() {
+                const time = Date.now() * 0.001;
+                for (let i = 0; i < bars; i++) {
+                    const frequency = i / bars;
+                    audioData[i] = Math.abs(Math.sin(time * 3 + frequency * 10)) * 
+                                  Math.abs(Math.sin(time * 0.5 + frequency * 5));
+                }
+            }
+            
+            function drawRealtimeAudio() {
+                if (!currentWork || currentWork.type !== 'realtime-audio') return;
+                
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                updateAudioData();
+                
+                // Draw frequency bars
+                for (let i = 0; i < bars; i++) {
+                    const height = audioData[i] * canvas.height * 0.8;
+                    const hue = (i / bars) * 360;
+                    
+                    ctx.fillStyle = `hsla(${hue}, 70%, 60%, 0.8)`;
+                    ctx.fillRect(i * barWidth, canvas.height - height, barWidth - 2, height);
+                    
+                    // Draw reflection
+                    ctx.fillStyle = `hsla(${hue}, 70%, 60%, 0.3)`;
+                    ctx.fillRect(i * barWidth, 0, barWidth - 2, height * 0.3);
+                }
+                
+                // Draw central mandala reactive to audio
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const avgAmplitude = audioData.reduce((a, b) => a + b) / bars;
+                
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i / 12) * Math.PI * 2;
+                    const radius = 50 + avgAmplitude * 100;
+                    
+                    ctx.beginPath();
+                    ctx.arc(
+                        Math.cos(angle) * radius,
+                        Math.sin(angle) * radius,
+                        5 + avgAmplitude * 20,
+                        0, Math.PI * 2
+                    );
+                    ctx.fillStyle = `rgba(212, 175, 55, ${avgAmplitude + 0.3})`;
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+                
+                modalAnimationId = requestAnimationFrame(drawRealtimeAudio);
+            }
+            
+            drawRealtimeAudio();
+        }
+        
+        // Work 13: Meditation Guide
+        function initMeditationWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            let startTime = Date.now();
+            
+            function drawMeditation() {
+                if (!currentWork || currentWork.type !== 'meditation') return;
+                
+                // 和紙のような背景
+                ctx.fillStyle = '#f8f8f0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const elapsed = (Date.now() - startTime) / 1000;
+                const cycle = elapsed % 16; // 4 sec inhale + 7 sec hold + 5 sec exhale = 16 sec cycle
+                
+                let phase = '';
+                let progress = 0;
+                let scale = 1;
+                
+                if (cycle < 4) {
+                    phase = '吸う';
+                    progress = cycle / 4;
+                    scale = 1 + progress * 0.5;
+                } else if (cycle < 11) {
+                    phase = '止める';
+                    progress = (cycle - 4) / 7;
+                    scale = 1.5;
+                } else {
+                    phase = '吐く';
+                    progress = (cycle - 11) / 5;
+                    scale = 1.5 - progress * 0.5;
+                }
+                
+                // Draw breathing circle (墨色の円)
+                const radius = 80 * scale;
+                
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(45, 45, 45, ${0.2 + progress * 0.2})`;  // 墨色
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(26, 26, 26, 0.8)`;  // 濃い墨色
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Draw instruction text (墨色の文字)
+                ctx.font = '24px "Noto Sans JP"';
+                ctx.fillStyle = 'rgba(45, 45, 45, 0.9)';  // 墨色
+                ctx.textAlign = 'center';
+                ctx.fillText(phase, centerX, centerY + 150);
+                
+                // Draw timer (薄墨色)
+                ctx.font = '16px "Noto Sans JP"';
+                ctx.fillStyle = 'rgba(74, 74, 74, 0.8)';  // 薄墨色
+                ctx.fillText(`${Math.ceil(16 - cycle)}秒`, centerX, centerY + 180);
+                
+                modalAnimationId = requestAnimationFrame(drawMeditation);
+            }
+            
+            drawMeditation();
+        }
+        
+        // Work 14: Physics Zen Garden
+        function initPhysicsWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const stones = [];
+            const gravity = 0.3;
+            const friction = 0.98;
+            
+            // Initialize stones
+            for (let i = 0; i < 8; i++) {
+                stones.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height * 0.5,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 2,
+                    radius: 5 + Math.random() * 15,
+                    mass: 1 + Math.random() * 3,
+                    color: `hsl(${45 + Math.random() * 30}, 30%, ${40 + Math.random() * 20}%)`
+                });
+            }
+            
+            function drawPhysics() {
+                if (!currentWork || currentWork.type !== 'physics') return;
+                
+                ctx.fillStyle = 'rgba(26, 26, 26, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Update physics
+                stones.forEach((stone, i) => {
+                    // Apply gravity
+                    stone.vy += gravity;
+                    
+                    // Update position
+                    stone.x += stone.vx;
+                    stone.y += stone.vy;
+                    
+                    // Apply friction
+                    stone.vx *= friction;
+                    stone.vy *= friction;
+                    
+                    // Bounce off walls
+                    if (stone.x - stone.radius < 0 || stone.x + stone.radius > canvas.width) {
+                        stone.vx *= -0.8;
+                        stone.x = Math.max(stone.radius, Math.min(canvas.width - stone.radius, stone.x));
+                    }
+                    
+                    if (stone.y + stone.radius > canvas.height) {
+                        stone.vy *= -0.6;
+                        stone.y = canvas.height - stone.radius;
+                    }
+                    
+                    // Collision with other stones
+                    stones.slice(i + 1).forEach(other => {
+                        const dx = other.x - stone.x;
+                        const dy = other.y - stone.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const minDistance = stone.radius + other.radius;
+                        
+                        if (distance < minDistance) {
+                            const angle = Math.atan2(dy, dx);
+                            const force = (minDistance - distance) * 0.1;
+                            
+                            stone.vx -= Math.cos(angle) * force / stone.mass;
+                            stone.vy -= Math.sin(angle) * force / stone.mass;
+                            other.vx += Math.cos(angle) * force / other.mass;
+                            other.vy += Math.sin(angle) * force / other.mass;
+                        }
+                    });
+                    
+                    // Draw stone
+                    ctx.beginPath();
+                    ctx.arc(stone.x, stone.y, stone.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = stone.color;
+                    ctx.fill();
+                    
+                    // Draw shadow
+                    ctx.beginPath();
+                    ctx.arc(stone.x + 2, stone.y + 2, stone.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                    ctx.fill();
+                });
+                
+                // Draw zen patterns in sand
+                const time = Date.now() * 0.001;
+                for (let i = 0; i < 5; i++) {
+                    const x = (canvas.width / 6) * (i + 1);
+                    const y = canvas.height * 0.8;
+                    
+                    ctx.beginPath();
+                    for (let angle = 0; angle < Math.PI * 2; angle += 0.1) {
+                        const radius = 30 + Math.sin(angle * 3 + time) * 10;
+                        const px = x + Math.cos(angle) * radius;
+                        const py = y + Math.sin(angle) * radius * 0.3;
+                        
+                        if (angle === 0) {
+                            ctx.moveTo(px, py);
+                        } else {
+                            ctx.lineTo(px, py);
+                        }
+                    }
+                    ctx.strokeStyle = 'rgba(138, 138, 138, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+                
+                modalAnimationId = requestAnimationFrame(drawPhysics);
+            }
+            
+            drawPhysics();
+        }
+        
+        // Work 15: Water Ripple Zen
+        function initRippleWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const ripples = [];
+            let lastDrop = 0;
+            
+            function addRipple() {
+                const x = centerX + (Math.random() - 0.5) * 100;
+                const y = centerY + (Math.random() - 0.5) * 100;
+                
+                ripples.push({
+                    x: x,
+                    y: y,
+                    radius: 0,
+                    maxRadius: Math.random() * 150 + 100,
+                    alpha: 1,
+                    speed: Math.random() * 2 + 1
+                });
+            }
+            
+            function drawRipple() {
+                if (!currentWork || currentWork.type !== 'ripple') return;
+                
+                // 和紙のような背景
+                ctx.fillStyle = 'rgba(248, 248, 240, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const time = Date.now();
+                
+                // Add new ripple every 2 seconds
+                if (time - lastDrop > 2000) {
+                    addRipple();
+                    lastDrop = time;
+                }
+                
+                // Update and draw ripples
+                for (let i = ripples.length - 1; i >= 0; i--) {
+                    const ripple = ripples[i];
+                    
+                    ripple.radius += ripple.speed;
+                    ripple.alpha = 1 - (ripple.radius / ripple.maxRadius);
+                    
+                    if (ripple.alpha <= 0) {
+                        ripples.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // Draw multiple concentric circles (墨色の波紋)
+                    for (let j = 0; j < 3; j++) {
+                        const r = ripple.radius - j * 20;
+                        if (r > 0) {
+                            ctx.beginPath();
+                            ctx.arc(ripple.x, ripple.y, r, 0, Math.PI * 2);
+                            ctx.strokeStyle = `rgba(45, 45, 45, ${ripple.alpha * (0.6 - j * 0.15)})`;  // 墨色
+                            ctx.lineWidth = Math.max(0.5, 2 - j * 0.5);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                
+                // Draw water surface texture (薄墨の質感) - エラー修正
+                ctx.save();
+                ctx.globalAlpha = 0.2;
+                for (let x = 0; x < canvas.width; x += 40) {
+                    for (let y = 0; y < canvas.height; y += 40) {
+                        const wave = Math.sin((time * 0.001 + x * 0.01 + y * 0.01)) * 2;  // 振幅を小さく
+                        const radius = Math.max(0.5, 1 + wave);  // 最小値を保証
+                        ctx.beginPath();
+                        ctx.arc(x, y, radius, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(74, 74, 74, 0.3)';  // 薄墨色
+                        ctx.fill();
+                    }
+                }
+                ctx.restore();
+                
+                modalAnimationId = requestAnimationFrame(drawRipple);
+            }
+            
+            drawRipple();
+        }
+        
+        // Work 16: Ukiyo-e Rain
+        function initRainWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const raindrops = [];
+            
+            // Initialize raindrops
+            for (let i = 0; i < 200; i++) {
+                raindrops.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    length: Math.random() * 20 + 10,
+                    speed: Math.random() * 5 + 3,
+                    angle: Math.PI / 6, // 30 degrees like in ukiyo-e
+                    opacity: Math.random() * 0.6 + 0.4
+                });
+            }
+            
+            function drawRain() {
+                if (!currentWork || currentWork.type !== 'rain') return;
+                
+                // Create ukiyo-e style background
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#2a2a2a');
+                gradient.addColorStop(0.7, '#1a1a1a');
+                gradient.addColorStop(1, '#0a0a0a');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw rain in ukiyo-e style
+                raindrops.forEach(drop => {
+                    // Update position
+                    drop.x += Math.cos(drop.angle) * drop.speed;
+                    drop.y += Math.sin(drop.angle) * drop.speed;
+                    
+                    // Reset if out of bounds
+                    if (drop.x > canvas.width + 50) {
+                        drop.x = -50;
+                        drop.y = Math.random() * canvas.height;
+                    }
+                    if (drop.y > canvas.height + 50) {
+                        drop.y = -50;
+                        drop.x = Math.random() * canvas.width;
+                    }
+                    
+                    // Draw raindrop line
+                    const endX = drop.x - Math.cos(drop.angle) * drop.length;
+                    const endY = drop.y - Math.sin(drop.angle) * drop.length;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(drop.x, drop.y);
+                    ctx.lineTo(endX, endY);
+                    ctx.strokeStyle = `rgba(138, 138, 138, ${drop.opacity})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    
+                    // Add subtle glow effect
+                    ctx.beginPath();
+                    ctx.moveTo(drop.x, drop.y);
+                    ctx.lineTo(endX, endY);
+                    ctx.strokeStyle = `rgba(232, 232, 232, ${drop.opacity * 0.3})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                });
+                
+                modalAnimationId = requestAnimationFrame(drawRain);
+            }
+            
+            drawRain();
+        }
+        
+        // Work 17: Ink Bleeding
+        function initInkWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const inkDrops = [];
+            let lastDrop = 0;
+            
+            function addInkDrop() {
+                inkDrops.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: 5,
+                    maxRadius: Math.random() * 100 + 50,
+                    intensity: 1,
+                    age: 0
+                });
+            }
+            
+            function drawInk() {
+                if (!currentWork || currentWork.type !== 'ink') return;
+                
+                // Washi paper background
+                ctx.fillStyle = '#f8f8f0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const time = Date.now();
+                
+                // Add new ink drop every 3 seconds
+                if (time - lastDrop > 3000) {
+                    addInkDrop();
+                    lastDrop = time;
+                }
+                
+                // Update and draw ink bleeding
+                for (let i = inkDrops.length - 1; i >= 0; i--) {
+                    const drop = inkDrops[i];
+                    
+                    drop.age += 0.02;
+                    drop.radius += 0.5;
+                    drop.intensity = Math.max(0, 1 - drop.age);
+                    
+                    if (drop.intensity <= 0.05) {
+                        inkDrops.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // Create ink bleeding effect with multiple layers
+                    const layers = 5;
+                    for (let layer = 0; layer < layers; layer++) {
+                        const layerRadius = drop.radius + layer * 10;
+                        const layerIntensity = drop.intensity * (1 - layer / layers);
+                        
+                        ctx.save();
+                        ctx.globalAlpha = layerIntensity * 0.3;
+                        ctx.filter = `blur(${layer * 2}px)`;
+                        
+                        const gradient = ctx.createRadialGradient(
+                            drop.x, drop.y, 0,
+                            drop.x, drop.y, layerRadius
+                        );
+                        gradient.addColorStop(0, '#2a2a2a');
+                        gradient.addColorStop(0.7, '#1a1a1a');
+                        gradient.addColorStop(1, 'transparent');
+                        
+                        ctx.beginPath();
+                        ctx.arc(drop.x, drop.y, layerRadius, 0, Math.PI * 2);
+                        ctx.fillStyle = gradient;
+                        ctx.fill();
+                        
+                        ctx.restore();
+                    }
+                    
+                    // Add fiber texture effect
+                    for (let j = 0; j < 20; j++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const distance = Math.random() * drop.radius;
+                        const x = drop.x + Math.cos(angle) * distance;
+                        const y = drop.y + Math.sin(angle) * distance;
+                        
+                        ctx.beginPath();
+                        ctx.arc(x, y, Math.random() * 2, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(45, 45, 45, ${drop.intensity * Math.random() * 0.5})`;
+                        ctx.fill();
+                    }
+                }
+                
+                modalAnimationId = requestAnimationFrame(drawInk);
+            }
+            
+            drawInk();
+        }
+        
+        // Work 18: Sakura Blizzard
+        function initSakuraWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const petals = [];
+            
+            // Initialize sakura petals
+            for (let i = 0; i < 50; i++) {
+                petals.push({
+                    x: Math.random() * canvas.width,
+                    y: -Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: Math.random() * 2 + 1,
+                    rotation: Math.random() * Math.PI * 2,
+                    rotationSpeed: (Math.random() - 0.5) * 0.1,
+                    size: Math.random() * 8 + 4,
+                    opacity: Math.random() * 0.8 + 0.2,
+                    color: `hsl(${330 + Math.random() * 30}, 70%, ${75 + Math.random() * 15}%)`
+                });
+            }
+            
+            function drawSakura() {
+                if (!currentWork || currentWork.type !== 'sakura') return;
+                
+                // Spring sky gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#e8f4f8');
+                gradient.addColorStop(1, '#d4e8f0');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const time = Date.now() * 0.001;
+                
+                petals.forEach(petal => {
+                    // Update physics
+                    petal.x += petal.vx + Math.sin(time + petal.y * 0.01) * 0.5;
+                    petal.y += petal.vy;
+                    petal.rotation += petal.rotationSpeed;
+                    
+                    // Reset if out of bounds
+                    if (petal.y > canvas.height + 20) {
+                        petal.y = -20;
+                        petal.x = Math.random() * canvas.width;
+                    }
+                    if (petal.x > canvas.width + 20) {
+                        petal.x = -20;
+                    } else if (petal.x < -20) {
+                        petal.x = canvas.width + 20;
+                    }
+                    
+                    // Draw sakura petal
+                    ctx.save();
+                    ctx.translate(petal.x, petal.y);
+                    ctx.rotate(petal.rotation);
+                    ctx.globalAlpha = petal.opacity;
+                    
+                    // Draw petal shape (5 petals)
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i / 5) * Math.PI * 2;
+                        const x = Math.cos(angle) * petal.size;
+                        const y = Math.sin(angle) * petal.size * 0.6;
+                        
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = petal.color;
+                    ctx.fill();
+                    
+                    // Add petal center
+                    ctx.beginPath();
+                    ctx.arc(0, 0, petal.size * 0.3, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsl(${45 + Math.random() * 15}, 80%, 60%)`;
+                    ctx.fill();
+                    
+                    ctx.restore();
+                });
+                
+                modalAnimationId = requestAnimationFrame(drawSakura);
+            }
+            
+            drawSakura();
+        }
+        
+        // Work 19: Bamboo Wind
+        function initBambooWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const bamboos = [];
+            
+            // Initialize bamboo stalks
+            for (let i = 0; i < 15; i++) {
+                bamboos.push({
+                    x: (i / 14) * canvas.width,
+                    baseY: canvas.height * 0.8,
+                    height: Math.random() * canvas.height * 0.6 + canvas.height * 0.2,
+                    width: Math.random() * 8 + 4,
+                    segments: Math.floor(Math.random() * 5) + 3,
+                    phase: Math.random() * Math.PI * 2,
+                    swayAmount: Math.random() * 0.02 + 0.01
+                });
+            }
+            
+            function drawBamboo() {
+                if (!currentWork || currentWork.type !== 'bamboo') return;
+                
+                // Forest background
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#2d4a2d');
+                gradient.addColorStop(0.7, '#1a3d1a');
+                gradient.addColorStop(1, '#0d2a0d');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const time = Date.now() * 0.001;
+                
+                bamboos.forEach((bamboo, index) => {
+                    const sway = Math.sin(time * 0.5 + bamboo.phase) * bamboo.swayAmount;
+                    const windEffect = Math.sin(time * 2 + index * 0.5) * 0.005;
+                    
+                    ctx.save();
+                    ctx.translate(bamboo.x, bamboo.baseY);
+                    
+                    // Draw bamboo stalk
+                    const segmentHeight = bamboo.height / bamboo.segments;
+                    
+                    for (let segment = 0; segment < bamboo.segments; segment++) {
+                        const y = -segment * segmentHeight;
+                        const swayOffset = (sway + windEffect) * segment * 20;
+                        
+                        ctx.save();
+                        ctx.translate(swayOffset, y);
+                        
+                        // Bamboo segment
+                        const gradient = ctx.createLinearGradient(-bamboo.width/2, 0, bamboo.width/2, 0);
+                        gradient.addColorStop(0, '#4a6741');
+                        gradient.addColorStop(0.5, '#6b8a5a');
+                        gradient.addColorStop(1, '#4a6741');
+                        
+                        ctx.fillStyle = gradient;
+                        ctx.fillRect(-bamboo.width/2, 0, bamboo.width, -segmentHeight);
+                        
+                        // Bamboo node
+                        ctx.strokeStyle = '#3d5436';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(-bamboo.width/2, 0);
+                        ctx.lineTo(bamboo.width/2, 0);
+                        ctx.stroke();
+                        
+                        // Bamboo leaves
+                        if (segment > bamboo.segments / 2) {
+                            for (let leaf = 0; leaf < 3; leaf++) {
+                                const leafAngle = (leaf - 1) * 0.8;
+                                const leafLength = 20 + Math.random() * 15;
+                                
+                                ctx.save();
+                                ctx.rotate(leafAngle + sway * 5);
+                                
+                                ctx.beginPath();
+                                ctx.ellipse(leafLength/2, 0, leafLength, 3, 0, 0, Math.PI * 2);
+                                ctx.fillStyle = `rgba(107, 138, 90, ${0.7 + Math.sin(time + leaf) * 0.2})`;
+                                ctx.fill();
+                                
+                                ctx.restore();
+                            }
+                        }
+                        
+                        ctx.restore();
+                    }
+                    
+                    ctx.restore();
+                });
+                
+                // Add atmospheric particles
+                for (let i = 0; i < 20; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const size = Math.random() * 2 + 1;
+                    const opacity = Math.sin(time + i) * 0.3 + 0.4;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(180, 200, 160, ${opacity * 0.3})`;
+                    ctx.fill();
+                }
+                
+                modalAnimationId = requestAnimationFrame(drawBamboo);
+            }
+            
+            drawBamboo();
+        }
+        
+        // Work 20: Moonlight Path
+        function initMoonlightWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const waves = [];
+            
+            // Initialize water waves
+            for (let i = 0; i < 50; i++) {
+                waves.push({
+                    x: Math.random() * canvas.width,
+                    y: canvas.height * 0.6 + Math.random() * canvas.height * 0.4,
+                    amplitude: Math.random() * 5 + 2,
+                    frequency: Math.random() * 0.02 + 0.01,
+                    phase: Math.random() * Math.PI * 2,
+                    speed: Math.random() * 0.02 + 0.01
+                });
+            }
+            
+            function drawMoonlight() {
+                if (!currentWork || currentWork.type !== 'moonlight') return;
+                
+                // Night sky gradient (和風の夜空)
+                const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.6);
+                skyGradient.addColorStop(0, '#1a1a2e');  // 深い藍色
+                skyGradient.addColorStop(1, '#2a2a3e');  // 薄い藍色
+                ctx.fillStyle = skyGradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height * 0.6);
+                
+                // Water gradient (和風の水面)
+                const waterGradient = ctx.createLinearGradient(0, canvas.height * 0.6, 0, canvas.height);
+                waterGradient.addColorStop(0, '#2a2a3e');
+                waterGradient.addColorStop(1, '#1a1a2e');
+                ctx.fillStyle = waterGradient;
+                ctx.fillRect(0, canvas.height * 0.6, canvas.width, canvas.height * 0.4);
+                
+                const time = Date.now() * 0.001;
+                const moonX = canvas.width * 0.7;
+                const moonY = canvas.height * 0.2;
+                const moonRadius = 40;
+                
+                // Draw moon (和風の月)
+                const moonGradient = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonRadius);
+                moonGradient.addColorStop(0, '#f8f8f0');  // 和紙色
+                moonGradient.addColorStop(0.7, '#e8e8e0');
+                moonGradient.addColorStop(1, '#d0d0c8');  // 薄墨色
+                
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
+                ctx.fillStyle = moonGradient;
+                ctx.fill();
+                
+                // Moon glow (月の暈)
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, moonRadius + 20, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(248, 248, 240, ${0.1 + Math.sin(time) * 0.05})`;
+                ctx.fill();
+                
+                // Moonlight path on water (月光の道)
+                const pathWidth = 100;
+                const pathCenterX = moonX;
+                
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                
+                for (let y = canvas.height * 0.6; y < canvas.height; y += 5) {
+                    const progress = (y - canvas.height * 0.6) / (canvas.height * 0.4);
+                    const waveOffset = Math.sin(time * 2 + y * 0.01) * 20 * progress;
+                    const width = pathWidth * (1 - progress * 0.3);
+                    
+                    const gradient = ctx.createLinearGradient(
+                        pathCenterX + waveOffset - width/2, y,
+                        pathCenterX + waveOffset + width/2, y
+                    );
+                    gradient.addColorStop(0, 'transparent');
+                    gradient.addColorStop(0.5, `rgba(248, 248, 240, ${0.3 * (1 - progress)})`);  // 和紙色の月光
+                    gradient.addColorStop(1, 'transparent');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(pathCenterX + waveOffset - width/2, y, width, 5);
+                }
+                
+                ctx.restore();
+                
+                // Water ripples (水の波紋)
+                waves.forEach(wave => {
+                    wave.phase += wave.speed;
+                    
+                    const rippleY = wave.y + Math.sin(wave.phase) * wave.amplitude;
+                    const rippleSize = Math.max(0.5, Math.sin(wave.phase * 0.5) * 3 + 2);  // 負の値を防止
+                    
+                    if (rippleSize > 0) {
+                        ctx.beginPath();
+                        ctx.arc(wave.x, rippleY, rippleSize, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(138, 138, 158, ${0.2 + Math.sin(wave.phase) * 0.1})`;
+                        ctx.fill();
+                    }
+                });
+                
+                // Stars (星)
+                for (let i = 0; i < 30; i++) {
+                    const starX = (i * 137.5) % canvas.width;
+                    const starY = (i * 23.7) % (canvas.height * 0.5);
+                    const twinkle = Math.sin(time * 3 + i) * 0.5 + 0.5;
+                    
+                    ctx.beginPath();
+                    ctx.arc(starX, starY, 1, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(248, 248, 240, ${twinkle * 0.8})`; // 和紙色の星
+                    ctx.fill();
+                }
+                
+                modalAnimationId = requestAnimationFrame(drawMoonlight);
+            }
+            
+            drawMoonlight();
+        }
+        
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+        
+        // Staggered animation for work cards
+        function animateWorkCards() {
+            const workCards = document.querySelectorAll('.work-card');
+            workCards.forEach((card, index) => {
+                setTimeout(() => {
+                    observer.observe(card);
+                }, index * 100);
+                
+                // Add click event
+                card.addEventListener('click', () => {
+                    openWorkModal(index);
+                });
+            });
+        }
+        
+        // Smooth scroll navigation
+        function setupNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const target = document.querySelector(item.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+        
+        // Mouse interaction effects
+        function setupMouseEffects() {
+            const workCards = document.querySelectorAll('.work-card');
+            workCards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = (y - centerY) / 20;
+                    const rotateY = (centerX - x) / 20;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-0.5rem)`;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(-0.5rem)';
+                });
+            });
+        }
+        
+        // Modal event listeners
+        function setupModalEvents() {
+            const closeBtn = document.getElementById('closeModal');
+            const modal = document.getElementById('workModal');
+            
+            closeBtn.addEventListener('click', closeWorkModal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeWorkModal();
+                }
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && currentWork) {
+                    closeWorkModal();
+                }
+            });
+        }
+        
+        // Window resize handler
+        function handleResize() {
+            if (camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            
+            // Resize modal canvas if open
+            if (currentWork && modalRenderer) {
+                const canvas = document.getElementById('workCanvas');
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                
+                if (modalRenderer) {
+                    modalRenderer.setSize(rect.width, rect.height);
+                    modalCamera.aspect = rect.width / rect.height;
+                    modalCamera.updateProjectionMatrix();
+                }
+            }
+        }
+        
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', () => {
+            initThreeJS();
+            setupNavigation();
+            animateWorkCards();
+            setupMouseEffects();
+            setupModalEvents();
+            
+            // Observe title and text elements
+            document.querySelectorAll('.section-title, .philosophy-text').forEach(el => {
+                observer.observe(el);
+            });
+            
+            window.addEventListener('resize', handleResize);
+        });
+        
+        // Add breathing effect to hero elements
+        setInterval(() => {
+            const heroTitle = document.querySelector('.hero-title');
+            if (heroTitle) {
+                heroTitle.style.transform = `scale(${1 + Math.sin(Date.now() * 0.001) * 0.02})`;
+            }
+        }, 16);
+    </script>
+</body>
+</html>
