@@ -1,15 +1,15 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Zen Garden - 高度モジュラーシステム</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Digital Zen Garden - 禅的実験室</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500&display=swap');
         
         :root {
-            /* ダークモード（宇宙）色設定 */
             --zen-black: #1a1a1a;
             --zen-charcoal: #2d2d2d;
             --zen-stone: #4a4a4a;
@@ -17,36 +17,9 @@
             --zen-pearl: #e8e8e8;
             --zen-white: #fafafa;
             --zen-accent: #d4af37;
-            --zen-danger: #d32f2f;
-            --zen-success: #388e3c;
-            
-            /* テーマ変数 */
-            --bg-primary: linear-gradient(135deg, var(--zen-black) 0%, var(--zen-charcoal) 100%);
-            --text-primary: var(--zen-pearl);
-            --text-secondary: var(--zen-silver);
-            --particle-color: 0xd4af37;
-            --scene-bg: 0x1a1a1a;
-            
             --golden-ratio: 1.618;
             --breathing: cubic-bezier(0.4, 0.0, 0.2, 1);
             --meditation: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        
-        /* 和紙モード */
-        [data-theme="washi"] {
-            --zen-black: #2d2d2d;
-            --zen-charcoal: #f8f8f0;
-            --zen-stone: #e0e0d8;
-            --zen-silver: #6d6d6d;
-            --zen-pearl: #2d2d2d;
-            --zen-white: #1a1a1a;
-            --zen-accent: #8b4513;
-            
-            --bg-primary: linear-gradient(135deg, #f8f8f0 0%, #e8e8e0 100%);
-            --text-primary: #2d2d2d;
-            --text-secondary: #6d6d6d;
-            --particle-color: 0x8b4513;
-            --scene-bg: 0xf8f8f0;
         }
         
         * {
@@ -57,271 +30,13 @@
         
         body {
             font-family: 'Inter', 'Noto Sans JP', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--zen-black) 0%, var(--zen-charcoal) 100%);
+            color: var(--zen-pearl);
             line-height: calc(1em * var(--golden-ratio));
             overflow-x: hidden;
             min-height: 100vh;
-            transition: all 2s var(--meditation);
         }
-
-        /* ローディング画面 */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--zen-charcoal);
-            z-index: 20000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 1;
-            transition: opacity 1s var(--meditation);
-        }
-
-        .loading-overlay.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .loading-text {
-            font-size: 2rem;
-            font-weight: 300;
-            color: var(--text-primary);
-            margin-bottom: 2rem;
-            opacity: 0;
-            animation: breatheInText 3s var(--meditation) 0.5s forwards;
-            letter-spacing: 0.3em;
-        }
-
-        .loading-progress {
-            width: 200px;
-            height: 1px;
-            background: rgba(212, 175, 55, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .loading-progress::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: var(--zen-accent);
-            animation: loadingProgress 3s var(--meditation) forwards;
-        }
-
-        /* 開発者モード - 拡張版 */
-        .dev-mode {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 10000;
-            background: rgba(26, 26, 26, 0.98);
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid var(--zen-accent);
-            max-width: 450px;
-            max-height: 80vh;
-            overflow-y: auto;
-            display: none;
-            backdrop-filter: blur(20px);
-        }
-
-        .dev-mode.active {
-            display: block;
-        }
-
-        .dev-toggle {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 10001;
-            background: var(--zen-accent);
-            color: var(--zen-black);
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 500;
-            transition: all 0.3s var(--breathing);
-        }
-
-        .dev-toggle:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-        }
-
-        .dev-tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid var(--zen-stone);
-            padding-bottom: 0.5rem;
-        }
-
-        .dev-tab {
-            padding: 0.5rem 1rem;
-            background: transparent;
-            border: none;
-            color: var(--zen-silver);
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            transition: all 0.3s var(--breathing);
-        }
-
-        .dev-tab.active {
-            background: var(--zen-accent);
-            color: var(--zen-black);
-        }
-
-        .dev-panel {
-            display: none;
-        }
-
-        .dev-panel.active {
-            display: block;
-        }
-
-        .dev-form {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-        }
-
-        .dev-form input, .dev-form textarea, .dev-form select {
-            background: var(--zen-charcoal);
-            border: 1px solid var(--zen-stone);
-            color: var(--zen-pearl);
-            padding: 0.6rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            transition: border-color 0.3s var(--breathing);
-        }
-
-        .dev-form input:focus, .dev-form textarea:focus, .dev-form select:focus {
-            outline: none;
-            border-color: var(--zen-accent);
-        }
-
-        .dev-form textarea {
-            height: 150px;
-            resize: vertical;
-            font-family: 'Courier New', monospace;
-            font-size: 0.75rem;
-        }
-
-        .dev-form button {
-            background: var(--zen-accent);
-            color: var(--zen-black);
-            border: none;
-            padding: 0.7rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s var(--breathing);
-        }
-
-        .dev-form button:hover {
-            background: #c19b2a;
-            transform: translateY(-1px);
-        }
-
-        .dev-form button.danger {
-            background: var(--zen-danger);
-            color: white;
-        }
-
-        .dev-form button.danger:hover {
-            background: #b71c1c;
-        }
-
-        .artwork-list {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid var(--zen-stone);
-            border-radius: 6px;
-            background: var(--zen-charcoal);
-        }
-
-        .artwork-item {
-            padding: 0.8rem;
-            border-bottom: 1px solid var(--zen-stone);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .artwork-item:last-child {
-            border-bottom: none;
-        }
-
-        .artwork-info h4 {
-            color: var(--zen-accent);
-            font-size: 0.9rem;
-            margin-bottom: 0.2rem;
-        }
-
-        .artwork-info p {
-            color: var(--zen-silver);
-            font-size: 0.7rem;
-            line-height: 1.4;
-        }
-
-        .artwork-controls {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .btn-small {
-            padding: 0.3rem 0.6rem;
-            font-size: 0.7rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s var(--breathing);
-        }
-
-        .btn-edit {
-            background: var(--zen-accent);
-            color: var(--zen-black);
-        }
-
-        .btn-delete {
-            background: var(--zen-danger);
-            color: white;
-        }
-
-        .btn-small:hover {
-            transform: translateY(-1px);
-        }
-
-        .type-indicator {
-            display: inline-block;
-            padding: 0.2rem 0.4rem;
-            border-radius: 3px;
-            font-size: 0.6rem;
-            font-weight: 500;
-            margin-left: 0.5rem;
-        }
-
-        .type-canvas {
-            background: rgba(76, 175, 80, 0.2);
-            color: #4caf50;
-        }
-
-        .type-threejs {
-            background: rgba(33, 150, 243, 0.2);
-            color: #2196f3;
-        }
-
+        
         /* Three.js Canvas Background */
         #zen-canvas {
             position: fixed;
@@ -341,22 +56,15 @@
             z-index: 1000;
             display: flex;
             gap: 2rem;
-            align-items: center;
             padding: 1rem 2rem;
             background: rgba(26, 26, 26, 0.8);
             backdrop-filter: blur(20px);
             border-radius: 50px;
             border: 1px solid rgba(232, 232, 232, 0.1);
-            transition: background 2s var(--meditation);
-        }
-
-        [data-theme="washi"] nav {
-            background: rgba(248, 248, 240, 0.9);
-            border-color: rgba(45, 45, 45, 0.1);
         }
         
         .nav-item {
-            color: var(--text-secondary);
+            color: var(--zen-silver);
             text-decoration: none;
             font-weight: 300;
             font-size: 0.9rem;
@@ -384,50 +92,6 @@
         .nav-item:hover::after {
             width: 100%;
         }
-
-        /* テーマ切り替えボタン */
-        .theme-toggle {
-            background: none;
-            border: 2px solid var(--zen-accent);
-            color: var(--zen-accent);
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.5s var(--meditation);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .theme-toggle:hover {
-            background: var(--zen-accent);
-            color: var(--zen-black);
-            transform: translateY(-2px);
-        }
-
-        .theme-toggle::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: var(--zen-accent);
-            transition: all 0.5s var(--meditation);
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-        }
-
-        .theme-toggle:hover::before {
-            width: 200%;
-            height: 200%;
-        }
-
-        .theme-toggle span {
-            position: relative;
-            z-index: 1;
-        }
         
         /* Hero Section */
         .hero {
@@ -453,27 +117,10 @@
         .hero-subtitle {
             font-size: clamp(1rem, 3vw, 1.5rem);
             font-weight: 300;
-            color: var(--text-secondary);
+            color: var(--zen-silver);
             opacity: 0;
             animation: breatheIn 2s var(--meditation) 1s forwards;
-            margin-bottom: 2rem;
-        }
-
-        .hero-philosophy {
-            font-size: clamp(1rem, 2.5vw, 1.3rem);
-            font-weight: 300;
-            color: var(--text-secondary);
-            opacity: 0;
-            animation: breatheIn 2s var(--meditation) 1.5s forwards;
             margin-bottom: 3rem;
-            max-width: 600px;
-            line-height: 1.8;
-        }
-
-        .hero-philosophy br {
-            content: "";
-            margin: 0.5rem 0;
-            display: block;
         }
         
         .scroll-indicator {
@@ -535,11 +182,6 @@
             position: relative;
             overflow: hidden;
         }
-
-        [data-theme="washi"] .work-card {
-            background: rgba(45, 45, 45, 0.05);
-            border-color: rgba(45, 45, 45, 0.1);
-        }
         
         .work-card::before {
             content: '';
@@ -566,15 +208,6 @@
             border-color: rgba(212, 175, 55, 0.3);
             box-shadow: 0 20px 40px rgba(212, 175, 55, 0.1);
         }
-
-        .work-card.threejs {
-            border-color: rgba(33, 150, 243, 0.2);
-        }
-
-        .work-card.threejs:hover {
-            border-color: rgba(33, 150, 243, 0.5);
-            box-shadow: 0 20px 40px rgba(33, 150, 243, 0.1);
-        }
         
         .work-preview {
             width: 100%;
@@ -586,84 +219,528 @@
             overflow: hidden;
         }
         
+        .mandala-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border: 2px solid var(--zen-accent);
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+        }
+        
+        .mandala-preview::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px solid var(--zen-silver);
+            border-radius: 50%;
+            animation: rotate 15s linear infinite reverse;
+        }
+        
+        .mandala-preview::after {
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            bottom: 30px;
+            border: 1px solid var(--zen-pearl);
+            border-radius: 50%;
+            animation: rotate 10s linear infinite;
+        }
+        
+        .geometry-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--zen-accent);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .zen-garden-preview {
+            position: absolute;
+            top: 70%;
+            left: 20%;
+            width: 60px;
+            height: 60px;
+            background: var(--zen-silver);
+            border-radius: 50%;
+            animation: ripple 4s ease-in-out infinite;
+        }
+        
+        .zen-garden-preview::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border: 1px solid var(--zen-accent);
+            border-radius: 50%;
+            animation: ripple 4s ease-in-out infinite 1s;
+        }
+        
+        /* Advanced Work Previews */
+        .fractal-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--zen-accent);
+            border-radius: 10%;
+            animation: fractalZoom 8s ease-in-out infinite;
+        }
+        
+        .fractal-preview::before {
+            content: '';
+            position: absolute;
+            top: 25%;
+            left: 25%;
+            width: 50%;
+            height: 50%;
+            border: 1px solid var(--zen-silver);
+            border-radius: 10%;
+            animation: fractalZoom 6s ease-in-out infinite reverse;
+        }
+        
+        .cellular-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            width: 80px;
+            height: 80px;
+        }
+        
+        .cellular-preview::before {
+            content: '';
+            grid-column: 1 / -1;
+            grid-row: 1 / -1;
+            background: 
+                radial-gradient(circle at 20% 20%, var(--zen-accent) 2px, transparent 2px),
+                radial-gradient(circle at 80% 20%, var(--zen-accent) 2px, transparent 2px),
+                radial-gradient(circle at 50% 80%, var(--zen-accent) 2px, transparent 2px);
+            background-size: 16px 16px;
+            animation: cellular 3s linear infinite;
+        }
+        
+        .noise-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 80px;
+            background: linear-gradient(45deg, var(--zen-stone), var(--zen-silver), var(--zen-stone));
+            border-radius: 10px;
+            animation: landscape 6s ease-in-out infinite;
+            overflow: hidden;
+        }
+        
+        .noise-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: linear-gradient(90deg, transparent, var(--zen-pearl), transparent);
+            animation: clouds 4s ease-in-out infinite;
+        }
+        
+        .lsystem-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 2px;
+            height: 60px;
+            background: var(--zen-accent);
+            transform-origin: bottom center;
+            animation: grow 5s ease-in-out infinite;
+        }
+        
+        .lsystem-preview::before,
+        .lsystem-preview::after {
+            content: '';
+            position: absolute;
+            bottom: 60%;
+            left: 50%;
+            width: 2px;
+            height: 40px;
+            background: var(--zen-silver);
+            transform-origin: bottom center;
+            animation: branch 5s ease-in-out infinite;
+        }
+        
+        .lsystem-preview::before {
+            transform: translate(-50%, 0) rotate(-30deg);
+            animation-delay: 1s;
+        }
+        
+        .lsystem-preview::after {
+            transform: translate(-50%, 0) rotate(30deg);
+            animation-delay: 1.5s;
+        }
+        
+        .sutra-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Noto Sans JP', serif;
+            font-size: 12px;
+            color: var(--zen-accent);
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            animation: textFloat 4s ease-in-out infinite;
+        }
+        
+        .sutra-preview::before {
+            content: '般若心経';
+            position: absolute;
+            animation: textDissolve 6s ease-in-out infinite;
+        }
+        
+        .audio-reactive-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 60px;
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+        }
+        
+        .audio-reactive-preview::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--zen-accent);
+            animation: audioBar1 2s ease-in-out infinite;
+        }
+        
+        .audio-reactive-preview::after {
+            content: '';
+            width: 4px;
+            height: 40px;
+            background: var(--zen-silver);
+            animation: audioBar2 2s ease-in-out infinite 0.5s;
+        }
+        
+        .meditation-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--zen-accent);
+            border-radius: 50%;
+            animation: breatheMeditation 6s ease-in-out infinite;
+        }
+        
+        .meditation-preview::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            height: 50%;
+            background: var(--zen-accent);
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: breatheMeditation 6s ease-in-out infinite reverse;
+        }
+        
+        .physics-preview {
+            position: absolute;
+            top: 70%;
+            left: 30%;
+            width: 15px;
+            height: 15px;
+            background: var(--zen-stone);
+            border-radius: 50%;
+            animation: bounce 3s ease-in-out infinite;
+        }
+        
+        .physics-preview::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 20px;
+            width: 12px;
+            height: 12px;
+            background: var(--zen-silver);
+            border-radius: 50%;
+            animation: bounce 3s ease-in-out infinite 0.3s;
+        }
+        
+        .physics-preview::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 40px;
+            width: 10px;
+            height: 10px;
+            background: var(--zen-accent);
+            border-radius: 50%;
+            animation: bounce 3s ease-in-out infinite 0.6s;
+        }
+        
+        /* Advanced Card Styling */
+        .work-card.advanced {
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            background: rgba(212, 175, 55, 0.05);
+        }
+        
+        .work-card.advanced:hover {
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.2);
+        }
+        
+        /* Zen Card Styling */
+        .work-card.zen {
+            border: 1px solid rgba(232, 232, 232, 0.3);
+            background: linear-gradient(135deg, rgba(232, 232, 232, 0.05), rgba(138, 138, 138, 0.05));
+        }
+        
+        .work-card.zen:hover {
+            border-color: rgba(232, 232, 232, 0.6);
+            box-shadow: 0 25px 50px rgba(232, 232, 232, 0.1);
+            transform: translateY(-0.8rem);
+        }
+        
+        /* Zen Work Previews */
+        .ripple-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent 30%, rgba(212, 175, 55, 0.1) 31%, rgba(212, 175, 55, 0.1) 40%, transparent 41%);
+            animation: waterRipple 3s ease-out infinite;
+        }
+        
+        .ripple-preview::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 4px;
+            background: var(--zen-accent);
+            border-radius: 50%;
+            animation: dropFall 3s ease-out infinite;
+        }
+        
+        .rain-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(75deg, transparent 45%, rgba(138, 138, 138, 0.3) 46%, rgba(138, 138, 138, 0.3) 47%, transparent 48%),
+                linear-gradient(78deg, transparent 48%, rgba(138, 138, 138, 0.2) 49%, rgba(138, 138, 138, 0.2) 50%, transparent 51%),
+                linear-gradient(72deg, transparent 47%, rgba(138, 138, 138, 0.4) 48%, rgba(138, 138, 138, 0.4) 49%, transparent 50%);
+            background-size: 20px 20px, 15px 25px, 18px 22px;
+            animation: rainFlow 2s linear infinite;
+        }
+        
+        .ink-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, var(--zen-charcoal) 20%, transparent 50%);
+            border-radius: 50%;
+            animation: inkBleed 4s ease-out infinite;
+            filter: blur(2px);
+        }
+        
+        .ink-preview::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            right: 10%;
+            bottom: 10%;
+            background: radial-gradient(circle, var(--zen-stone) 30%, transparent 70%);
+            border-radius: 50%;
+            animation: inkBleed 4s ease-out infinite 0.5s;
+            filter: blur(1px);
+        }
+        
+        .sakura-preview {
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            width: 8px;
+            height: 8px;
+            background: #ffb7c5;
+            border-radius: 50% 0 50% 0;
+            animation: sakuraFall 4s ease-in-out infinite;
+        }
+        
+        .sakura-preview::before {
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: 40px;
+            width: 6px;
+            height: 6px;
+            background: #ffc0cb;
+            border-radius: 50% 0 50% 0;
+            animation: sakuraFall 4s ease-in-out infinite 1s;
+        }
+        
+        .sakura-preview::after {
+            content: '';
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            width: 7px;
+            height: 7px;
+            background: #ffb7c5;
+            border-radius: 50% 0 50% 0;
+            animation: sakuraFall 4s ease-in-out infinite 2s;
+        }
+        
+        .bamboo-preview {
+            position: absolute;
+            top: 20%;
+            left: 30%;
+            width: 4px;
+            height: 120px;
+            background: linear-gradient(to bottom, var(--zen-stone), var(--zen-accent));
+            border-radius: 2px;
+            animation: bambooSway 3s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+        
+        .bamboo-preview::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            width: 4px;
+            height: 100px;
+            background: linear-gradient(to bottom, var(--zen-silver), var(--zen-stone));
+            border-radius: 2px;
+            animation: bambooSway 3s ease-in-out infinite 0.5s;
+            transform-origin: bottom center;
+        }
+        
+        .bamboo-preview::after {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 10px;
+            width: 4px;
+            height: 110px;
+            background: linear-gradient(to bottom, var(--zen-accent), var(--zen-charcoal));
+            border-radius: 2px;
+            animation: bambooSway 3s ease-in-out infinite 1s;
+            transform-origin: bottom center;
+        }
+        
+        .moonlight-preview {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, var(--zen-pearl) 0%, var(--zen-silver) 40%, transparent 70%);
+            border-radius: 50%;
+            animation: moonGlow 5s ease-in-out infinite;
+        }
+        
+        .moonlight-preview::before {
+            content: '';
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 60px;
+            background: linear-gradient(to bottom, var(--zen-pearl), transparent);
+            animation: moonReflection 5s ease-in-out infinite;
+        }
+        
+        /* Ultimate Mandala Preview */
+        .ultimate-mandala-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+        }
+        
+        .ultimate-mandala-preview::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--zen-stone);
+            border-radius: 50%;
+            animation: ultimateMandala1 8s ease-in-out infinite;
+        }
+        
+        .ultimate-mandala-preview::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, var(--zen-accent) 30%, transparent 70%);
+            border-radius: 50%;
+            animation: ultimateMandala2 6s ease-in-out infinite reverse;
+        }
+        
         .work-title {
             font-size: 1.3rem;
             font-weight: 500;
             margin-bottom: 0.8rem;
-            color: var(--text-primary);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .title-text {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .work-controls {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .copy-code-btn {
-            background: rgba(212, 175, 55, 0.2);
-            color: var(--zen-accent);
-            border: 1px solid rgba(212, 175, 55, 0.4);
-            padding: 0.3rem 0.8rem;
-            border-radius: 0.5rem;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: all 0.3s var(--breathing);
-        }
-
-        .copy-code-btn:hover {
-            background: rgba(212, 175, 55, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .copy-code-btn.copied {
-            background: rgba(76, 175, 80, 0.3);
-            color: #4caf50;
-            border-color: rgba(76, 175, 80, 0.5);
-        }
-
-        .edit-btn, .delete-btn {
-            padding: 0.3rem 0.8rem;
-            border-radius: 0.5rem;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: all 0.3s var(--breathing);
-            border: 1px solid;
-        }
-
-        .edit-btn {
-            background: rgba(138, 138, 138, 0.2);
-            color: var(--text-secondary);
-            border-color: rgba(138, 138, 138, 0.4);
-        }
-
-        .edit-btn:hover {
-            background: rgba(138, 138, 138, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .delete-btn {
-            background: rgba(211, 47, 47, 0.2);
-            color: var(--zen-danger);
-            border-color: rgba(211, 47, 47, 0.4);
-        }
-
-        .delete-btn:hover {
-            background: rgba(211, 47, 47, 0.3);
-            transform: translateY(-2px);
+            color: var(--zen-white);
         }
         
         .work-description {
-            color: var(--text-secondary);
+            color: var(--zen-silver);
             font-size: 0.9rem;
             line-height: 1.6;
             margin-bottom: 1rem;
@@ -673,6 +750,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
+            margin-bottom: 1rem;
         }
         
         .tech-tag {
@@ -683,90 +761,333 @@
             font-size: 0.8rem;
             border: 1px solid rgba(212, 175, 55, 0.2);
         }
-
-        /* About Section */
-        .about-section {
-            padding: 8rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            background: rgba(248, 248, 240, 0.02);
-            border-radius: 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        [data-theme="washi"] .about-section {
-            background: rgba(45, 45, 45, 0.03);
-        }
-
-        .about-section::before {
-            content: '';
+        
+        /* Copy Overlay and Floating Buttons */
+        .copy-overlay {
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at center, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
-            animation: rotateGlow 30s linear infinite;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.3s var(--breathing);
         }
-
-        .about-content {
-            position: relative;
-            z-index: 1;
+        
+        .work-card:hover .copy-overlay {
+            opacity: 1;
+        }
+        
+        .copy-btn-float {
+            background: rgba(212, 175, 55, 0.9);
+            border: 1px solid rgba(212, 175, 55, 1);
+            color: var(--zen-white);
+            padding: 6px;
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s var(--breathing);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .copy-btn-float:hover {
+            background: rgba(212, 175, 55, 1);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+        
+        .copy-btn-float:active {
+            transform: scale(0.95);
+        }
+        
+        .copy-btn-float.copied {
+            background: rgba(138, 187, 87, 0.9);
+            border-color: rgba(138, 187, 87, 1);
+        }
+        
+        /* Philosophy Section */
+        .philosophy-section {
+            padding: 8rem 2rem;
+            background: linear-gradient(135deg, rgba(45, 45, 45, 0.3), rgba(26, 26, 26, 0.3));
             text-align: center;
         }
-
-        .about-title {
-            font-size: clamp(2rem, 4vw, 2.5rem);
-            font-weight: 300;
-            margin-bottom: 3rem;
-            color: var(--text-primary);
-        }
-
-        .about-philosophy {
-            font-size: clamp(1rem, 2vw, 1.2rem);
-            line-height: 2;
-            color: var(--text-secondary);
-            text-align: justify;
+        
+        .philosophy-text {
             max-width: 800px;
             margin: 0 auto;
+            font-size: 1.1rem;
+            line-height: 2;
+            color: var(--zen-silver);
+            opacity: 0;
+            transform: translateY(2rem);
+            transition: all 1s var(--meditation);
         }
-
-        .about-philosophy strong {
-            color: var(--zen-accent);
-            font-weight: 500;
+        
+        .philosophy-text.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
-
+        
         /* Footer */
-        .footer {
+        footer {
             padding: 4rem 2rem 2rem;
             text-align: center;
             border-top: 1px solid rgba(232, 232, 232, 0.1);
-            margin-top: 4rem;
         }
-
-        [data-theme="washi"] .footer {
-            border-color: rgba(45, 45, 45, 0.1);
+        
+        .footer-content {
+            color: var(--zen-silver);
+            font-size: 0.9rem;
         }
-
-        .footer-quote {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-            font-style: italic;
+        
+        /* Animations */
+        @keyframes breatheIn {
+            from {
+                opacity: 0;
+                transform: translateY(2rem);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-
-        .footer-signature {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            opacity: 0.7;
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
-
-        .footer-signature .signature-name {
-            font-style: italic;
-            color: var(--zen-accent);
+        
+        @keyframes rotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
         }
-
+        
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-10px); }
+        }
+        
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        @keyframes fractalZoom {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.3); }
+        }
+        
+        @keyframes cellular {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: 16px 16px, -16px 16px, 8px -16px; }
+        }
+        
+        @keyframes landscape {
+            0%, 100% { transform: translate(-50%, -50%) scaleY(1); }
+            50% { transform: translate(-50%, -50%) scaleY(1.2); }
+        }
+        
+        @keyframes clouds {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes grow {
+            0% { height: 20px; }
+            50% { height: 60px; }
+            100% { height: 40px; }
+        }
+        
+        @keyframes branch {
+            0% { height: 0; opacity: 0; }
+            50% { height: 30px; opacity: 1; }
+            100% { height: 20px; opacity: 0.7; }
+        }
+        
+        @keyframes textFloat {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-10px); }
+        }
+        
+        @keyframes textDissolve {
+            0% { opacity: 1; filter: blur(0); }
+            50% { opacity: 0.3; filter: blur(2px); }
+            100% { opacity: 1; filter: blur(0); }
+        }
+        
+        @keyframes audioBar1 {
+            0%, 100% { height: 20px; }
+            25% { height: 50px; }
+            50% { height: 30px; }
+            75% { height: 45px; }
+        }
+        
+        @keyframes audioBar2 {
+            0%, 100% { height: 40px; }
+            25% { height: 60px; }
+            50% { height: 25px; }
+            75% { height: 55px; }
+        }
+        
+        @keyframes breatheMeditation {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            33% { transform: translate(-50%, -50%) scale(1.2); }  /* 吸う */
+            50% { transform: translate(-50%, -50%) scale(1.2); }  /* 止める */
+            100% { transform: translate(-50%, -50%) scale(1); }   /* 吐く */
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes waterRipple {
+            0% { 
+                transform: translate(-50%, -50%) scale(0.3); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(2); 
+                opacity: 0; 
+            }
+        }
+        
+        @keyframes dropFall {
+            0% { 
+                transform: translate(-50%, -80px) scale(1); 
+                opacity: 1; 
+            }
+            30% { 
+                transform: translate(-50%, -50%) scale(1.2); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(0); 
+                opacity: 0; 
+            }
+        }
+        
+        @keyframes rainFlow {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: -20px 20px, -15px 25px, -18px 22px; }
+        }
+        
+        @keyframes inkBleed {
+            0% { 
+                transform: translate(-50%, -50%) scale(0.2); 
+                opacity: 0.8; 
+                filter: blur(0); 
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1); 
+                opacity: 0.6; 
+                filter: blur(3px); 
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(1.5); 
+                opacity: 0.2; 
+                filter: blur(5px); 
+            }
+        }
+        
+        @keyframes sakuraFall {
+            0% { 
+                transform: translateY(0) rotate(0deg); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translateY(120px) rotate(360deg); 
+                opacity: 0; 
+            }
+        }
+        
+        @keyframes bambooSway {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(2deg); }
+            75% { transform: rotate(-2deg); }
+        }
+        
+        @keyframes moonGlow {
+            0%, 100% { 
+                opacity: 0.8; 
+                box-shadow: 0 0 20px rgba(232, 232, 232, 0.3); 
+            }
+            50% { 
+                opacity: 1; 
+                box-shadow: 0 0 30px rgba(232, 232, 232, 0.6); 
+            }
+        }
+        
+        @keyframes moonReflection {
+            0%, 100% { 
+                opacity: 0.3; 
+                transform: translateX(-50%) scaleY(1); 
+            }
+            50% { 
+                opacity: 0.7; 
+                transform: translateX(-50%) scaleY(1.2); 
+            }
+        }
+        
+        @keyframes ultimateMandala1 {
+            0%, 100% { 
+                transform: translate(-50%, -50%) rotate(0deg) scale(1); 
+                opacity: 0.7; 
+            }
+            50% { 
+                transform: translate(-50%, -50%) rotate(180deg) scale(1.1); 
+                opacity: 1; 
+            }
+        }
+        
+        @keyframes ultimateMandala2 {
+            0%, 100% { 
+                transform: translate(-50%, -50%) rotate(0deg) scale(1); 
+                opacity: 0.8; 
+            }
+            50% { 
+                transform: translate(-50%, -50%) rotate(-180deg) scale(0.8); 
+                opacity: 0.5; 
+            }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            nav {
+                top: 1rem;
+                right: 1rem;
+                left: 1rem;
+                justify-content: center;
+                gap: 1rem;
+                padding: 0.8rem 1rem;
+            }
+            
+            .works-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .work-card {
+                padding: 1.5rem;
+            }
+            
+            .copy-btn-float {
+                width: 24px;
+                height: 24px;
+                font-size: 10px;
+            }
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
         /* Work Modal */
         .work-modal {
             position: fixed;
@@ -783,10 +1104,6 @@
             pointer-events: none;
             transition: all 0.5s var(--meditation);
         }
-
-        [data-theme="washi"] .work-modal {
-            background: rgba(248, 248, 240, 0.95);
-        }
         
         .work-modal.active {
             opacity: 1;
@@ -800,24 +1117,17 @@
             align-items: center;
             border-bottom: 1px solid rgba(232, 232, 232, 0.1);
         }
-
-        [data-theme="washi"] .modal-header {
-            border-color: rgba(45, 45, 45, 0.1);
-        }
         
         .modal-title {
-            color: var(--text-primary);
+            color: var(--zen-white);
             font-size: 1.5rem;
             font-weight: 300;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
         
         .close-btn {
             background: none;
             border: none;
-            color: var(--text-secondary);
+            color: var(--zen-silver);
             font-size: 2rem;
             cursor: pointer;
             padding: 0.5rem;
@@ -847,1175 +1157,413 @@
             height: 100%;
             background: radial-gradient(circle at center, var(--zen-charcoal) 0%, var(--zen-black) 100%);
         }
-
-        [data-theme="washi"] .work-canvas {
-            background: radial-gradient(circle at center, #f8f8f0 0%, #e8e8e0 100%);
-        }
         
-        /* Animations */
-        @keyframes breatheIn {
-            from {
-                opacity: 0;
-                transform: translateY(2rem);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes breatheInText {
-            from {
-                opacity: 0;
-                transform: translateY(1rem);
-                letter-spacing: 0.1em;
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-                letter-spacing: 0.3em;
-            }
-        }
-
-        @keyframes loadingProgress {
-            from {
-                left: -100%;
-            }
-            to {
-                left: 100%;
-            }
-        }
-
-        @keyframes rotateGlow {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            nav {
-                top: 1rem;
-                right: 1rem;
-                left: 1rem;
-                justify-content: center;
-                gap: 1rem;
-                padding: 0.8rem 1rem;
-                flex-wrap: wrap;
-            }
-            
-            .works-grid {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-            
-            .work-card {
-                padding: 1.5rem;
-            }
-
-            .dev-toggle {
-                font-size: 0.7rem;
-                padding: 0.4rem 0.8rem;
-            }
-
-            .dev-mode {
-                max-width: calc(100vw - 20px);
-                padding: 1rem;
-            }
-
-            .work-title {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .work-controls {
-                flex-wrap: wrap;
-            }
-
-            .hero-philosophy {
-                font-size: 1rem;
-                line-height: 1.6;
-            }
-
-            .about-section {
-                padding: 4rem 2rem;
-            }
-
-            .theme-toggle {
-                font-size: 0.8rem;
-                padding: 0.4rem 0.8rem;
-            }
-        }
-        
-        /* Smooth scrolling */
-        html {
-            scroll-behavior: smooth;
+        /* Selection styling */
+        ::selection {
+            background: rgba(212, 175, 55, 0.3);
+            color: var(--zen-white);
         }
     </style>
 </head>
 <body>
-    <!-- ローディング画面 -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-text">still... becoming...</div>
-        <div class="loading-progress"></div>
-    </div>
-
-    <!-- 開発者モードボタン -->
-    <button class="dev-toggle" onclick="toggleDevMode()">🛠 開発</button>
-    
-    <!-- 開発者モード - 拡張版 -->
-    <div class="dev-mode" id="devMode">
-        <div class="dev-tabs">
-            <button class="dev-tab active" onclick="switchDevTab('add')">➕ 追加</button>
-            <button class="dev-tab" onclick="switchDevTab('manage')">📋 管理</button>
-            <button class="dev-tab" onclick="switchDevTab('help')">❓ ヘルプ</button>
+<canvas id="zen-canvas"></canvas>
+<nav>
+<a class="nav-item" href="#works">作品</a>
+<a class="nav-item" href="#philosophy">哲学</a>
+<a class="nav-item" href="#contact">結縁</a>
+</nav>
+<section class="hero">
+<h1 class="hero-title">Digital Zen Garden</h1>
+<p class="hero-subtitle">技術と瞑想の交差点で生まれる美的実験</p>
+<div class="scroll-indicator">
+<div class="scroll-line"></div>
+<span style="font-size: 0.8rem; color: var(--zen-silver);">scroll</span>
+</div>
+</section>
+<section class="works-section" id="works">
+<h2 class="section-title">技術見本・実験ラボラトリー</h2>
+<div class="works-grid">
+<div class="work-card">
+<div class="work-preview">
+<div class="mandala-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="0" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="0" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">曼荼羅生成システム</h3>
+<p class="work-description">Three.jsとWebGLシェーダーを用いた動的曼荼羅の生成。数学的美と禅的瞑想の融合を探求。</p>
+<div class="work-tech">
+<span class="tech-tag">Three.js</span>
+<span class="tech-tag">GLSL</span>
+<span class="tech-tag">Canvas</span>
+</div>
+<div class="copy-buttons">
+<button class="copy-btn" data-index="0" data-type="prompt">📋 Prompt Copy</button>
+<button class="copy-btn" data-index="0" data-type="code">💻 Code Copy</button>
+</div>
+</div>
+<div class="work-card">
+<div class="work-preview">
+<div class="geometry-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="1" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="1" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">幾何学瞑想</h3>
+<p class="work-description">SVGとCSSアニメーションによる幾何学パターンの探求。黄金比と自然数列の視覚化。</p>
+<div class="work-tech">
+<span class="tech-tag">SVG</span>
+<span class="tech-tag">CSS</span>
+<span class="tech-tag">JavaScript</span>
+</div>
+<div class="copy-buttons">
+<button class="copy-btn" data-index="1" data-type="prompt">📋 Prompt Copy</button>
+<button class="copy-btn" data-index="1" data-type="code">💻 Code Copy</button>
+</div>
+</div>
+<div class="work-card">
+<div class="work-preview">
+<div class="zen-garden-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="2" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="2" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">デジタル枯山水</h3>
+<p class="work-description">パーティクルシステムとノイズ関数を用いた、インタラクティブな砂庭のシミュレーション。</p>
+<div class="work-tech">
+<span class="tech-tag">WebGL</span>
+<span class="tech-tag">Noise</span>
+<span class="tech-tag">Physics</span>
+</div>
+<div class="copy-buttons">
+<button class="copy-btn" data-index="2" data-type="prompt">📋 Prompt Copy</button>
+<button class="copy-btn" data-index="2" data-type="code">💻 Code Copy</button>
+</div>
+</div>
+<div class="work-card">
+<div class="work-preview">
+<div class="mandala-preview" style="animation-duration: 25s;"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="3" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="3" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">呼吸するインターフェース</h3>
+<p class="work-description">生体リズムに同調するUI実験。イージング関数と時間を用いた有機的なアニメーション。</p>
+<div class="work-tech">
+<span class="tech-tag">React</span>
+<span class="tech-tag">Framer Motion</span>
+<span class="tech-tag">WebAPI</span>
+</div>
+</div>
+<div class="work-card">
+<div class="work-preview">
+<div class="geometry-preview" style="clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="4" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="4" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">音の視覚化</h3>
+<p class="work-description">Web Audio APIを用いた音響の視覚的表現。周波数解析とリアルタイム描画の実験。</p>
+<div class="work-tech">
+<span class="tech-tag">Web Audio</span>
+<span class="tech-tag">Canvas 2D</span>
+<span class="tech-tag">FFT</span>
+</div>
+</div>
+<div class="work-card">
+<div class="work-preview">
+<div class="zen-garden-preview" style="animation-duration: 6s;"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="5" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="5" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">プロシージャルアート</h3>
+<p class="work-description">アルゴリズムによる自動生成アート。ランダム性と制御の絶妙なバランスを追求。</p>
+<div class="work-tech">
+<span class="tech-tag">p5.js</span>
+<span class="tech-tag">Algorithm</span>
+<span class="tech-tag">Generative</span>
+</div>
+</div>
+<!-- Advanced Technical Demos -->
+<div class="work-card advanced">
+<div class="work-preview">
+<div class="fractal-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="6" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="6" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">フラクタル宇宙</h3>
+<p class="work-description">マンデルブロ集合とジュリア集合の数学的美。無限の自己相似構造を探求。</p>
+<div class="work-tech">
+<span class="tech-tag">Complex Math</span>
+<span class="tech-tag">GLSL</span>
+<span class="tech-tag">WebGL2</span>
+</div>
+</div>
+<div class="work-card advanced">
+<div class="work-preview">
+<div class="cellular-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="7" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="7" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">セルオートマトン</h3>
+<p class="work-description">Conway's Game of Lifeと禅的パターン進化。単純ルールから生まれる複雑美。</p>
+<div class="work-tech">
+<span class="tech-tag">Cellular Automata</span>
+<span class="tech-tag">Algorithm</span>
+<span class="tech-tag">Pattern</span>
+</div>
+</div>
+<div class="work-card advanced">
+<div class="work-preview">
+<div class="noise-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="8" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="8" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">パーリンノイズランドスケープ</h3>
+<p class="work-description">自然的地形生成とリアルタイム雲シミュレーション。プロシージャル地形美学。</p>
+<div class="work-tech">
+<span class="tech-tag">Perlin Noise</span>
+<span class="tech-tag">Procedural</span>
+<span class="tech-tag">Terrain</span>
+</div>
+</div>
+<div class="work-card advanced">
+<div class="work-preview">
+<div class="lsystem-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="9" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="9" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">L-System植物成長</h3>
+<p class="work-description">アルゴリズムによる植物成長パターンの模倣。再帰的美の探求。</p>
+<div class="work-tech">
+<span class="tech-tag">L-System</span>
+<span class="tech-tag">Recursive</span>
+<span class="tech-tag">Biology</span>
+</div>
+</div>
+<div class="work-card advanced">
+<div class="work-preview">
+<div class="sutra-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="10" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="10" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">般若心経ビジュアライザー</h3>
+<p class="work-description">文字粒子の舞い散りと禅的アニメーション。古典と現代技術の融合。</p>
+<div class="work-tech">
+<span class="tech-tag">Typography</span>
+<span class="tech-tag">Particle</span>
+<span class="tech-tag">文字解析</span>
+</div>
+</div>
+<div class="work-card advanced">
+<div class="work-preview">
+<div class="audio-reactive-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="11" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="11" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">リアルタイム音響反応</h3>
+<p class="work-description">マイク入力による動的ビジュアルエフェクト。音と光の共鳴実験。</p>
+<div class="work-tech">
+<span class="tech-tag">WebRTC</span>
+<span class="tech-tag">Real-time</span>
+<span class="tech-tag">Audio Analysis</span>
+</div>
+</div>
+<div class="work-card advanced">
+<div class="work-preview">
+<div class="meditation-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="12" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="12" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">呼吸瞑想ガイド</h3>
+<p class="work-description">4-7-8呼吸法の視覚的ガイダンス。科学的瞑想技術の実装。</p>
+<div class="work-tech">
+<span class="tech-tag">Meditation</span>
+<span class="tech-tag">Biometric</span>
+<span class="tech-tag">Wellness</span>
+</div>
+</div>
+<div class="work-card advanced">
+<div class="work-preview">
+<div class="physics-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="13" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="13" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">物理シミュレーション禅庭</h3>
+<p class="work-description">リアルタイム物理エンジンによる石庭シミュレーション。重力と美の調和。</p>
+<div class="work-tech">
+<span class="tech-tag">Physics Engine</span>
+<span class="tech-tag">Collision</span>
+<span class="tech-tag">Simulation</span>
+</div>
+</div>
+<!-- Ultimate Zen Mandala -->
+<div class="work-card zen">
+<div class="work-preview">
+<div class="ultimate-mandala-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="14" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="14" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">究極禅曼荼羅</h3>
+<p class="work-description">六段階の禅的進化を表現する究極の曼荼羅システム。無から光への道程。</p>
+<div class="work-tech">
+<span class="tech-tag">Advanced Three.js</span>
+<span class="tech-tag">Shader</span>
+<span class="tech-tag">禅哲学</span>
+</div>
+</div>
+<!-- Zen Aesthetic Demos -->
+<div class="work-card zen">
+<div class="work-preview">
+<div class="ripple-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="15" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="15" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">一滴の波紋</h3>
+<p class="work-description">水滴が落ちて広がる波紋の禅的シミュレーション。静寂の中の動き。</p>
+<div class="work-tech">
+<span class="tech-tag">Wave Physics</span>
+<span class="tech-tag">Circular Motion</span>
+<span class="tech-tag">禅美学</span>
+</div>
+</div>
+<div class="work-card zen">
+<div class="work-preview">
+<div class="rain-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="16" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="16" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">浮世絵の雨</h3>
+<p class="work-description">歌川広重の雨表現をデジタルで再現。伝統美術と現代技術の融合。</p>
+<div class="work-tech">
+<span class="tech-tag">Ukiyo-e</span>
+<span class="tech-tag">Traditional Art</span>
+<span class="tech-tag">雨表現</span>
+</div>
+</div>
+<div class="work-card zen">
+<div class="work-preview">
+<div class="ink-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="17" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="17" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">墨絵の滲み</h3>
+<p class="work-description">墨が和紙に滲む瞬間の美的表現。書道の精神性をデジタルで。</p>
+<div class="work-tech">
+<span class="tech-tag">Ink Simulation</span>
+<span class="tech-tag">Fluid Dynamics</span>
+<span class="tech-tag">書道</span>
+</div>
+</div>
+<div class="work-card zen">
+<div class="work-preview">
+<div class="sakura-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="18" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="18" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">桜吹雪</h3>
+<p class="work-description">散りゆく桜の花びらの物理シミュレーション。無常の美。</p>
+<div class="work-tech">
+<span class="tech-tag">Particle Physics</span>
+<span class="tech-tag">Wind Simulation</span>
+<span class="tech-tag">花見</span>
+</div>
+</div>
+<div class="work-card zen">
+<div class="work-preview">
+<div class="bamboo-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="19" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="19" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">竹林の風</h3>
+<p class="work-description">風に揺れる竹林の音と光の表現。自然のリズムを感じる。</p>
+<div class="work-tech">
+<span class="tech-tag">Procedural Animation</span>
+<span class="tech-tag">Sound Synthesis</span>
+<span class="tech-tag">竹林</span>
+</div>
+</div>
+<div class="work-card zen">
+<div class="work-preview">
+<div class="moonlight-preview"></div>
+<div class="copy-overlay">
+<button class="copy-btn-float" data-index="20" data-type="prompt" title="Copy Prompt">📋</button>
+<button class="copy-btn-float" data-index="20" data-type="code" title="Copy Code">💻</button>
+</div>
+</div>
+<h3 class="work-title">月光の道</h3>
+<p class="work-description">水面に映る月光のレイトレーシング。夜の静寂美。</p>
+<div class="work-tech">
+<span class="tech-tag">Ray Tracing</span>
+<span class="tech-tag">Water Reflection</span>
+<span class="tech-tag">月見</span>
+</div>
+</div>
+</div>
+</section>
+<section class="philosophy-section" id="philosophy">
+<h2 class="section-title">日本美学とデジタル技術の融合</h2>
+<div class="philosophy-text">
+            一滴の水が湖面に落ちる瞬間。雨が斜めに降る浮世絵の美。<br/>
+            墨が和紙に滲む書道の精神。散りゆく桜の無常観。<br/>
+            風に揺れる竹林の音。水面に映る月光の道。<br/><br/>
+            
+            古来より日本人が愛でてきた自然の美を、現代のデジタル技術で再現する。<br/>
+            物理エンジン、パーティクルシステム、レイトレーシング——<br/>
+            最新の技術を使って、千年変わらない美の本質を表現する。<br/><br/>
+            
+            これは技術者としての修行であり、日本人としての誇りである。<br/>
+            コードに込めた魂が、画面の向こうで静かに美を語りかける。
         </div>
-
-        <!-- 追加パネル -->
-        <div class="dev-panel active" id="addPanel">
-            <h3 style="color: var(--zen-accent); margin-bottom: 1rem; font-size: 1rem;">新作品追加</h3>
-            <form class="dev-form" onsubmit="addNewWork(event)">
-                <input type="text" id="newTitle" placeholder="作品タイトル" required>
-                <textarea id="newDescription" placeholder="作品説明" required></textarea>
-                <input type="text" id="newTech" placeholder="技術タグ (カンマ区切り)" required>
-                
-                <select id="newType" onchange="updateCodeTemplate()" required>
-                    <option value="">作品タイプを選択</option>
-                    <option value="canvas">Canvas 2D アニメーション</option>
-                    <option value="threejs">Three.js 3D作品</option>
-                </select>
-                
-                <textarea id="newCode" placeholder="コードを記述..." required></textarea>
-                <button type="submit">作品を追加</button>
-            </form>
-        </div>
-
-        <!-- 管理パネル -->
-        <div class="dev-panel" id="managePanel">
-            <h3 style="color: var(--zen-accent); margin-bottom: 1rem; font-size: 1rem;">作品管理</h3>
-            <div class="artwork-list" id="artworkList">
-                <!-- 動的生成 -->
-            </div>
-        </div>
-
-        <!-- ヘルプパネル -->
-        <div class="dev-panel" id="helpPanel">
-            <h3 style="color: var(--zen-accent); margin-bottom: 1rem; font-size: 1rem;">使い方ガイド</h3>
-            <div style="font-size: 0.8rem; line-height: 1.6; color: var(--zen-silver);">
-                <h4 style="color: var(--zen-accent); margin: 1rem 0 0.5rem;">Canvas 2D 作品:</h4>
-                <code style="background: var(--zen-charcoal); padding: 0.2rem; border-radius: 3px;">
-                function draw(ctx, canvas) {<br>
-                &nbsp;&nbsp;// 描画コード<br>
-                &nbsp;&nbsp;ctx.fillStyle = '#000';<br>
-                &nbsp;&nbsp;ctx.fillRect(0, 0, canvas.width, canvas.height);<br>
-                }
-                </code>
-                
-                <h4 style="color: var(--zen-accent); margin: 1rem 0 0.5rem;">Three.js 3D 作品:</h4>
-                <code style="background: var(--zen-charcoal); padding: 0.2rem; border-radius: 3px;">
-                function initThreeJS(container) {<br>
-                &nbsp;&nbsp;// Three.jsシーン初期化<br>
-                &nbsp;&nbsp;const scene = new THREE.Scene();<br>
-                &nbsp;&nbsp;// ... 3D設定<br>
-                &nbsp;&nbsp;return { scene, camera, renderer, animate };<br>
-                }
-                </code>
-
-                <h4 style="color: var(--zen-accent); margin: 1rem 0 0.5rem;">操作:</h4>
-                • <strong>コピー</strong>: 📋ボタンでコード取得<br>
-                • <strong>編集</strong>: ✏️ボタンで修正<br>
-                • <strong>削除</strong>: 🗑️ボタンで削除<br>
-                • <strong>プレビュー</strong>: カードクリックで表示
-            </div>
-        </div>
-    </div>
-
-    <canvas id="zen-canvas"></canvas>
-    
-    <nav>
-        <a href="#works" class="nav-item">作品</a>
-        <a href="#about" class="nav-item">概要</a>
-        <a href="#contact" class="nav-item">連絡</a>
-        <button class="theme-toggle" onclick="toggleTheme()">
-            <span id="themeIcon">🌌 ⇄ 🌸</span>
-        </button>
-    </nav>
-    
-    <section class="hero">
-        <h1 class="hero-title">Digital Zen Garden</h1>
-        <p class="hero-subtitle">高度モジュラー技術実験ラボラトリー</p>
-        <p class="hero-philosophy">
-            この庭はまだ完成していない。<br>
-            それでも、美しい。
-        </p>
-        <div class="scroll-indicator">
-            <div class="scroll-line"></div>
-            <span style="font-size: 0.8rem; color: var(--text-secondary);">scroll</span>
-        </div>
-    </section>
-    
-    <section id="works" class="works-section">
-        <h2 class="section-title">技術見本・実験ギャラリー</h2>
-        <div class="works-grid" id="worksGrid">
-            <!-- 作品は動的生成 -->
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="about-section">
-        <div class="about-content">
-            <h2 class="about-title">構造、瞑想、未完成</h2>
-            <p class="about-philosophy">
-                <strong>ZEN GARDEN</strong> は、「変化しながら在ること」の可視化装置です。<br>
-                技術によって静けさを描き、構造によって自分自身を映す。<br>
-                この庭は、今も静かに生成されています。
-            </p>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer" id="contact">
-        <p class="footer-quote">A digital garden that is always becoming.</p>
-        <p class="footer-signature">
-            Created by <span class="signature-name">Tatsuya Minegishi</span>
-        </p>
-    </footer>
-    
-    <!-- Work Modal -->
-    <div id="workModal" class="work-modal">
-        <div class="modal-header">
-            <h3 class="modal-title" id="modalTitle">作品タイトル</h3>
-            <button class="close-btn" onclick="closeWorkModal()">×</button>
-        </div>
-        <div class="modal-content">
-            <canvas class="work-canvas" id="workCanvas"></canvas>
-        </div>
-    </div>
-
-    <script>
-        // グローバル変数
-        let currentTheme = 'cosmos';
-        let backgroundInstance = null;
-
-        // 作品データベース（Canvas 2D + Three.js 対応）
-        let artworks = [
-            {
-                id: 'zen-mandala',
-                title: '禅曼荼羅',
-                description: '呼吸に合わせて回転する曼荼羅。墨絵の美学をデジタルで表現。',
-                tech: ['Canvas 2D', '数学', '禅美学'],
-                category: 'zen',
-                type: 'canvas',
-                codeString: `function draw(ctx, canvas) {
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const time = Date.now() * 0.001;
-    
-    // テーマに応じた背景
-    const isWashi = document.documentElement.dataset.theme === 'washi';
-    ctx.fillStyle = isWashi ? '#f8f8f0' : '#1a1a1a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // 曼荼羅の層を描画
-    const layers = 8;
-    for (let layer = 0; layer < layers; layer++) {
-        const radius = (layer + 1) * 25;
-        const rotation = time * (layer % 2 === 0 ? 0.3 : -0.3);
-        
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(rotation);
-        
-        // 円環描画
-        ctx.beginPath();
-        ctx.arc(0, 0, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = isWashi ? \`rgba(45, 45, 45, \${0.3 + layer * 0.1})\` : \`rgba(232, 232, 232, \${0.3 + layer * 0.1})\`;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        
-        ctx.restore();
-    }
-    
-    // 中心の金色の点
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
-    ctx.fillStyle = isWashi ? 'rgba(139, 69, 19, 0.9)' : 'rgba(212, 175, 55, 0.9)';
-    ctx.fill();
-}`,
-                drawFunction: function(ctx, canvas) {
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const time = Date.now() * 0.001;
-                    
-                    const isWashi = document.documentElement.dataset.theme === 'washi';
-                    ctx.fillStyle = isWashi ? '#f8f8f0' : '#1a1a1a';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    const layers = 8;
-                    for (let layer = 0; layer < layers; layer++) {
-                        const radius = (layer + 1) * 25;
-                        const rotation = time * (layer % 2 === 0 ? 0.3 : -0.3);
-                        
-                        ctx.save();
-                        ctx.translate(centerX, centerY);
-                        ctx.rotate(rotation);
-                        
-                        ctx.beginPath();
-                        ctx.arc(0, 0, radius, 0, Math.PI * 2);
-                        ctx.strokeStyle = isWashi ? `rgba(45, 45, 45, ${0.3 + layer * 0.1})` : `rgba(232, 232, 232, ${0.3 + layer * 0.1})`;
-                        ctx.lineWidth = 2;
-                        ctx.stroke();
-                        
-                        ctx.restore();
-                    }
-                    
-                    ctx.beginPath();
-                    ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
-                    ctx.fillStyle = isWashi ? 'rgba(139, 69, 19, 0.9)' : 'rgba(212, 175, 55, 0.9)';
-                    ctx.fill();
-                }
-            },
-            {
-                id: 'ultimate-mandala-3d',
-                title: '究極禅曼荼羅 3D',
-                description: '究極の3D禅曼荼羅。六段階の禅的進化を3Dで表現する神聖幾何学システム。',
-                tech: ['Three.js', 'WebGL', 'GLSL', '禅哲学'],
-                category: 'ultimate',
-                type: 'threejs',
-                codeString: `function initThreeJS(container) {
-    // シーン初期化
-    const scene = new THREE.Scene();
-    const isWashi = document.documentElement.dataset.theme === 'washi';
-    scene.background = new THREE.Color(isWashi ? 0xf8f8f0 : 0x1a1a1a);
-    
-    // カメラ
-    const camera = new THREE.PerspectiveCamera(60, container.offsetWidth / container.offsetHeight, 0.1, 1000);
-    camera.position.set(0, 15, 40);
-    
-    // レンダラー
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(container.offsetWidth, container.offsetHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(renderer.domElement);
-    
-    // 究極のシェーダー
-    const ultimateVertexShader = \`
-        varying vec2 vUv;
-        varying vec3 vNormal;
-        uniform float time;
-        
-        void main() {
-            vUv = uv;
-            vNormal = normalize(normalMatrix * normal);
-            
-            vec3 pos = position;
-            float breath = sin(time * 0.5) * 0.1;
-            pos *= 1.0 + breath;
-            
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-        }
-    \`;
-    
-    const ultimateFragmentShader = \`
-        uniform float time;
-        uniform vec3 color1;
-        uniform vec3 color2;
-        varying vec2 vUv;
-        varying vec3 vNormal;
-        
-        void main() {
-            float fresnel = 1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)));
-            vec3 color = mix(color1, color2, fresnel);
-            gl_FragColor = vec4(color, 0.8);
-        }
-    \`;
-    
-    // 神聖幾何学メッシュ
-    const geometry = new THREE.IcosahedronGeometry(10, 2);
-    const material = new THREE.ShaderMaterial({
-        vertexShader: ultimateVertexShader,
-        fragmentShader: ultimateFragmentShader,
-        uniforms: {
-            time: { value: 0 },
-            color1: { value: new THREE.Color(isWashi ? 0x2d2d2d : 0x000000) },
-            color2: { value: new THREE.Color(isWashi ? 0x8b4513 : 0xd4af37) }
-        },
-        transparent: true,
-        wireframe: true
-    });
-    
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-    
-    // パーティクルシステム
-    const particleGeometry = new THREE.BufferGeometry();
-    const particleCount = 1000;
-    const positions = new Float32Array(particleCount * 3);
-    
-    for (let i = 0; i < particleCount; i++) {
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(Math.random() * 2 - 1);
-        const radius = 15 + Math.random() * 10;
-        
-        positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-        positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-        positions[i * 3 + 2] = radius * Math.cos(phi);
-    }
-    
-    particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    
-    const particleMaterial = new THREE.PointsMaterial({
-        size: 1.5,
-        color: isWashi ? 0x8b4513 : 0xd4af37,
-        transparent: true,
-        opacity: 0.6,
-        blending: THREE.AdditiveBlending
-    });
-    
-    const particles = new THREE.Points(particleGeometry, particleMaterial);
-    scene.add(particles);
-    
-    // ライティング
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-    scene.add(ambientLight);
-    
-    const pointLight = new THREE.PointLight(isWashi ? 0x8b4513 : 0xd4af37, 0.8);
-    pointLight.position.set(0, 20, 0);
-    scene.add(pointLight);
-    
-    // アニメーション関数
-    function animate() {
-        const time = Date.now() * 0.001;
-        
-        // メッシュアニメーション
-        mesh.rotation.y += 0.005;
-        mesh.rotation.x += 0.002;
-        material.uniforms.time.value = time;
-        
-        // パーティクルアニメーション
-        particles.rotation.y -= 0.001;
-        
-        // ライトアニメーション
-        pointLight.position.x = Math.cos(time * 0.5) * 20;
-        pointLight.position.z = Math.sin(time * 0.5) * 20;
-        
-        renderer.render(scene, camera);
-    }
-    
-    return { scene, camera, renderer, animate };
-}`,
-                initFunction: function(container) {
-                    const scene = new THREE.Scene();
-                    const isWashi = document.documentElement.dataset.theme === 'washi';
-                    scene.background = new THREE.Color(isWashi ? 0xf8f8f0 : 0x1a1a1a);
-                    
-                    const camera = new THREE.PerspectiveCamera(60, container.offsetWidth / container.offsetHeight, 0.1, 1000);
-                    camera.position.set(0, 15, 40);
-                    
-                    const renderer = new THREE.WebGLRenderer({ antialias: true });
-                    renderer.setSize(container.offsetWidth, container.offsetHeight);
-                    renderer.setPixelRatio(window.devicePixelRatio);
-                    container.appendChild(renderer.domElement);
-                    
-                    const ultimateVertexShader = `
-                        varying vec2 vUv;
-                        varying vec3 vNormal;
-                        uniform float time;
-                        
-                        void main() {
-                            vUv = uv;
-                            vNormal = normalize(normalMatrix * normal);
-                            
-                            vec3 pos = position;
-                            float breath = sin(time * 0.5) * 0.1;
-                            pos *= 1.0 + breath;
-                            
-                            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-                        }
-                    `;
-                    
-                    const ultimateFragmentShader = `
-                        uniform float time;
-                        uniform vec3 color1;
-                        uniform vec3 color2;
-                        varying vec2 vUv;
-                        varying vec3 vNormal;
-                        
-                        void main() {
-                            float fresnel = 1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)));
-                            vec3 color = mix(color1, color2, fresnel);
-                            gl_FragColor = vec4(color, 0.8);
-                        }
-                    `;
-                    
-                    const geometry = new THREE.IcosahedronGeometry(10, 2);
-                    const material = new THREE.ShaderMaterial({
-                        vertexShader: ultimateVertexShader,
-                        fragmentShader: ultimateFragmentShader,
-                        uniforms: {
-                            time: { value: 0 },
-                            color1: { value: new THREE.Color(isWashi ? 0x2d2d2d : 0x000000) },
-                            color2: { value: new THREE.Color(isWashi ? 0x8b4513 : 0xd4af37) }
-                        },
-                        transparent: true,
-                        wireframe: true
-                    });
-                    
-                    const mesh = new THREE.Mesh(geometry, material);
-                    scene.add(mesh);
-                    
-                    const particleGeometry = new THREE.BufferGeometry();
-                    const particleCount = 1000;
-                    const positions = new Float32Array(particleCount * 3);
-                    
-                    for (let i = 0; i < particleCount; i++) {
-                        const theta = Math.random() * Math.PI * 2;
-                        const phi = Math.acos(Math.random() * 2 - 1);
-                        const radius = 15 + Math.random() * 10;
-                        
-                        positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-                        positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-                        positions[i * 3 + 2] = radius * Math.cos(phi);
-                    }
-                    
-                    particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                    
-                    const particleMaterial = new THREE.PointsMaterial({
-                        size: 1.5,
-                        color: isWashi ? 0x8b4513 : 0xd4af37,
-                        transparent: true,
-                        opacity: 0.6,
-                        blending: THREE.AdditiveBlending
-                    });
-                    
-                    const particles = new THREE.Points(particleGeometry, particleMaterial);
-                    scene.add(particles);
-                    
-                    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-                    scene.add(ambientLight);
-                    
-                    const pointLight = new THREE.PointLight(isWashi ? 0x8b4513 : 0xd4af37, 0.8);
-                    pointLight.position.set(0, 20, 0);
-                    scene.add(pointLight);
-                    
-                    function animate() {
-                        const time = Date.now() * 0.001;
-                        
-                        mesh.rotation.y += 0.005;
-                        mesh.rotation.x += 0.002;
-                        material.uniforms.time.value = time;
-                        
-                        particles.rotation.y -= 0.001;
-                        
-                        pointLight.position.x = Math.cos(time * 0.5) * 20;
-                        pointLight.position.z = Math.sin(time * 0.5) * 20;
-                        
-                        renderer.render(scene, camera);
-                    }
-                    
-                    return { scene, camera, renderer, animate };
-                }
-            },
-            {
-                id: 'breathing-circle',
-                title: '呼吸する円',
-                description: '瞑想のリズムに合わせて拡縮する禅的インターフェース。',
-                tech: ['Canvas 2D', '瞑想', 'UI/UX'],
-                category: 'meditation',
-                type: 'canvas',
-                codeString: `function draw(ctx, canvas) {
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const time = Date.now() * 0.001;
-    
-    // テーマに応じた背景
-    const isWashi = document.documentElement.dataset.theme === 'washi';
-    ctx.fillStyle = isWashi ? '#f8f8f0' : '#1a1a1a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // 呼吸パターン（4秒吸う、4秒止める、4秒吐く）
-    const cycle = time % 12;
-    let breathe = 1;
-    if (cycle < 4) {
-        breathe = 1 + (cycle / 4) * 0.5; // 吸う
-    } else if (cycle < 8) {
-        breathe = 1.5; // 止める
-    } else {
-        breathe = 1.5 - ((cycle - 8) / 4) * 0.5; // 吐く
-    }
-    
-    // 呼吸する円
-    for (let i = 0; i < 5; i++) {
-        const radius = (i + 1) * 30 * breathe;
-        const alpha = (1 - i * 0.15) * 0.6;
-        
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = isWashi ? \`rgba(45, 45, 45, \${alpha})\` : \`rgba(232, 232, 232, \${alpha})\`;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-    }
-    
-    // 中心の核
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 10 * breathe, 0, Math.PI * 2);
-    ctx.fillStyle = isWashi ? \`rgba(139, 69, 19, \${breathe - 0.5})\` : \`rgba(212, 175, 55, \${breathe - 0.5})\`;
-    ctx.fill();
-}`,
-                drawFunction: function(ctx, canvas) {
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const time = Date.now() * 0.001;
-                    
-                    const isWashi = document.documentElement.dataset.theme === 'washi';
-                    ctx.fillStyle = isWashi ? '#f8f8f0' : '#1a1a1a';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    const cycle = time % 12;
-                    let breathe = 1;
-                    if (cycle < 4) {
-                        breathe = 1 + (cycle / 4) * 0.5;
-                    } else if (cycle < 8) {
-                        breathe = 1.5;
-                    } else {
-                        breathe = 1.5 - ((cycle - 8) / 4) * 0.5;
-                    }
-                    
-                    for (let i = 0; i < 5; i++) {
-                        const radius = (i + 1) * 30 * breathe;
-                        const alpha = (1 - i * 0.15) * 0.6;
-                        
-                        ctx.beginPath();
-                        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-                        ctx.strokeStyle = isWashi ? `rgba(45, 45, 45, ${alpha})` : `rgba(232, 232, 232, ${alpha})`;
-                        ctx.lineWidth = 2;
-                        ctx.stroke();
-                    }
-                    
-                    ctx.beginPath();
-                    ctx.arc(centerX, centerY, 10 * breathe, 0, Math.PI * 2);
-                    ctx.fillStyle = isWashi ? `rgba(139, 69, 19, ${breathe - 0.5})` : `rgba(212, 175, 55, ${breathe - 0.5})`;
-                    ctx.fill();
-                }
-            }
-        ];
-
-        // グローバル変数
-        let currentArtwork = null;
-        let animationId = null;
-        let threeJSInstance = null;
-        let editingArtworkId = null;
-
-        // テーマ切り替え
-        function toggleTheme() {
-            const html = document.documentElement;
-            const themeIcon = document.getElementById('themeIcon');
-            
-            if (currentTheme === 'cosmos') {
-                html.dataset.theme = 'washi';
-                currentTheme = 'washi';
-                themeIcon.textContent = '🌸 ⇄ 🌌';
-            } else {
-                html.removeAttribute('data-theme');
-                currentTheme = 'cosmos';
-                themeIcon.textContent = '🌌 ⇄ 🌸';
-            }
-            
-            // 背景を再初期化
-            if (backgroundInstance) {
-                backgroundInstance.updateTheme();
-            }
-        }
-
-        // ローディング画面
-        function hideLoading() {
-            setTimeout(() => {
-                document.getElementById('loadingOverlay').classList.add('fade-out');
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                }, 1000);
-            }, 3000);
-        }
-
-        // 開発者モードタブ切り替え
-        function switchDevTab(tab) {
-            document.querySelectorAll('.dev-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.dev-panel').forEach(p => p.classList.remove('active'));
-            
-            document.querySelector(`[onclick="switchDevTab('${tab}')"]`).classList.add('active');
-            document.getElementById(tab + 'Panel').classList.add('active');
-            
-            if (tab === 'manage') {
-                updateArtworkList();
-            }
-        }
-
-        // コードテンプレート更新
-        function updateCodeTemplate() {
-            const type = document.getElementById('newType').value;
-            const codeArea = document.getElementById('newCode');
-            
-            if (type === 'canvas') {
-                codeArea.value = `function draw(ctx, canvas) {
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const time = Date.now() * 0.001;
-    
-    // テーマに応じた背景
-    const isWashi = document.documentElement.dataset.theme === 'washi';
-    ctx.fillStyle = isWashi ? '#f8f8f0' : '#1a1a1a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // ここにアニメーションコードを記述
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 50 + Math.sin(time) * 20, 0, Math.PI * 2);
-    ctx.strokeStyle = isWashi ? 'rgba(45, 45, 45, 0.8)' : 'rgba(232, 232, 232, 0.8)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-}`;
-            } else if (type === 'threejs') {
-                codeArea.value = `function initThreeJS(container) {
-    // シーン初期化
-    const scene = new THREE.Scene();
-    const isWashi = document.documentElement.dataset.theme === 'washi';
-    scene.background = new THREE.Color(isWashi ? 0xf8f8f0 : 0x1a1a1a);
-    
-    // カメラ
-    const camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
-    camera.position.z = 5;
-    
-    // レンダラー
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(container.offsetWidth, container.offsetHeight);
-    container.appendChild(renderer.domElement);
-    
-    // ジオメトリとマテリアル
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({ 
-        color: isWashi ? 0x8b4513 : 0xd4af37, 
-        wireframe: true 
-    });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-    
-    // アニメーション関数
-    function animate() {
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-        renderer.render(scene, camera);
-    }
-    
-    return { scene, camera, renderer, animate };
-}`;
-            }
-        }
-
-        // 作品リスト更新
-        function updateArtworkList() {
-            const listContainer = document.getElementById('artworkList');
-            listContainer.innerHTML = '';
-            
-            artworks.forEach(artwork => {
-                const item = document.createElement('div');
-                item.className = 'artwork-item';
-                item.innerHTML = `
-                    <div class="artwork-info">
-                        <h4>${artwork.title}
-                            <span class="type-indicator type-${artwork.type}">${artwork.type.toUpperCase()}</span>
-                        </h4>
-                        <p>${artwork.description}</p>
-                    </div>
-                    <div class="artwork-controls">
-                        <button class="btn-small btn-edit" onclick="editArtwork('${artwork.id}')">✏️</button>
-                        <button class="btn-small btn-delete" onclick="deleteArtwork('${artwork.id}')">🗑️</button>
-                    </div>
-                `;
-                listContainer.appendChild(item);
-            });
-        }
-
-        // 作品編集
-        function editArtwork(artworkId) {
-            const artwork = artworks.find(a => a.id === artworkId);
-            if (!artwork) return;
-            
-            editingArtworkId = artworkId;
-            
-            document.getElementById('newTitle').value = artwork.title;
-            document.getElementById('newDescription').value = artwork.description;
-            document.getElementById('newTech').value = artwork.tech.join(', ');
-            document.getElementById('newType').value = artwork.type;
-            document.getElementById('newCode').value = artwork.codeString;
-            
-            switchDevTab('add');
-            
-            const submitBtn = document.querySelector('#addPanel button[type="submit"]');
-            submitBtn.textContent = '変更を保存';
-            submitBtn.style.background = 'var(--zen-success)';
-        }
-
-        // 作品削除
-        function deleteArtwork(artworkId) {
-            if (!confirm('この作品を削除しますか？この操作は取り消せません。')) return;
-            
-            const index = artworks.findIndex(a => a.id === artworkId);
-            if (index !== -1) {
-                artworks.splice(index, 1);
-                generateWorkCards();
-                updateArtworkList();
-                alert('作品を削除しました。');
-            }
-        }
-
-        // 作品カード動的生成
-        function generateWorkCards() {
-            const grid = document.getElementById('worksGrid');
-            grid.innerHTML = '';
-
-            artworks.forEach((artwork, index) => {
-                const card = document.createElement('div');
-                card.className = `work-card ${artwork.type}`;
-                card.innerHTML = `
-                    <div class="work-preview" id="preview-${artwork.id}"></div>
-                    <div class="work-title">
-                        <div class="title-text">
-                            ${artwork.title}
-                            <span class="type-indicator type-${artwork.type}">${artwork.type.toUpperCase()}</span>
-                        </div>
-                        <div class="work-controls">
-                            <button class="copy-code-btn" onclick="copyCode('${artwork.id}')" title="コードをコピー">
-                                📋
-                            </button>
-                            <button class="edit-btn" onclick="editArtwork('${artwork.id}')" title="編集">
-                                ✏️
-                            </button>
-                            <button class="delete-btn" onclick="deleteArtwork('${artwork.id}')" title="削除">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-                    <p class="work-description">${artwork.description}</p>
-                    <div class="work-tech">
-                        ${artwork.tech.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
-                    </div>
-                `;
-
-                card.addEventListener('click', (e) => {
-                    if (!e.target.closest('button')) {
-                        openWorkModal(index);
-                    }
-                });
-
-                grid.appendChild(card);
-
-                setTimeout(() => {
-                    generatePreview(artwork);
-                    card.classList.add('visible');
-                }, index * 100);
-            });
-        }
-
-        // プレビュー生成（Canvas 2D & Three.js 対応）
-        function generatePreview(artwork) {
-            const previewDiv = document.getElementById(`preview-${artwork.id}`);
-            
-            if (artwork.type === 'canvas') {
-                const canvas = document.createElement('canvas');
-                canvas.width = previewDiv.offsetWidth;
-                canvas.height = previewDiv.offsetHeight;
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                previewDiv.appendChild(canvas);
-
-                const ctx = canvas.getContext('2d');
-                
-                function animate() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    artwork.drawFunction(ctx, canvas);
-                    requestAnimationFrame(animate);
-                }
-                animate();
-            } else if (artwork.type === 'threejs' && artwork.initFunction) {
-                try {
-                    const instance = artwork.initFunction(previewDiv);
-                    if (instance && instance.animate) {
-                        function animateLoop() {
-                            instance.animate();
-                            requestAnimationFrame(animateLoop);
-                        }
-                        animateLoop();
-                    }
-                } catch (error) {
-                    console.error('Three.js preview error:', error);
-                    previewDiv.innerHTML = '<div style="color: #d32f2f; padding: 1rem; text-align: center;">3D Preview Error</div>';
-                }
-            }
-        }
-
-        // モーダル開く（Canvas 2D & Three.js 対応）
-        function openWorkModal(index) {
-            currentArtwork = artworks[index];
-            const modal = document.getElementById('workModal');
-            const title = document.getElementById('modalTitle');
-            const canvas = document.getElementById('workCanvas');
-
-            title.innerHTML = `${currentArtwork.title} <span class="type-indicator type-${currentArtwork.type}">${currentArtwork.type.toUpperCase()}</span>`;
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-
-            if (threeJSInstance && threeJSInstance.renderer) {
-                threeJSInstance.renderer.dispose();
-                threeJSInstance = null;
-            }
-
-            setTimeout(() => {
-                const rect = canvas.getBoundingClientRect();
-                
-                if (currentArtwork.type === 'canvas') {
-                    canvas.width = rect.width;
-                    canvas.height = rect.height;
-                    const ctx = canvas.getContext('2d');
-                    
-                    function animate() {
-                        if (!currentArtwork || currentArtwork.type !== 'canvas') return;
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        currentArtwork.drawFunction(ctx, canvas);
-                        animationId = requestAnimationFrame(animate);
-                    }
-                    animate();
-                } else if (currentArtwork.type === 'threejs' && currentArtwork.initFunction) {
-                    try {
-                        canvas.style.display = 'none';
-                        const container = canvas.parentElement;
-                        
-                        threeJSInstance = currentArtwork.initFunction(container);
-                        
-                        if (threeJSInstance && threeJSInstance.animate) {
-                            function animate() {
-                                if (!currentArtwork || currentArtwork.type !== 'threejs') return;
-                                threeJSInstance.animate();
-                                animationId = requestAnimationFrame(animate);
-                            }
-                            animate();
-                        }
-                    } catch (error) {
-                        console.error('Three.js modal error:', error);
-                        canvas.style.display = 'block';
-                        const ctx = canvas.getContext('2d');
-                        ctx.fillStyle = '#d32f2f';
-                        ctx.font = '20px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('Three.js Error', rect.width / 2, rect.height / 2);
-                    }
-                }
-            }, 100);
-        }
-
-        // モーダル閉じる
-        function closeWorkModal() {
-            const modal = document.getElementById('workModal');
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto';
-            
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
-            }
-            
-            if (threeJSInstance && threeJSInstance.renderer) {
-                threeJSInstance.renderer.domElement.remove();
-                threeJSInstance.renderer.dispose();
-                threeJSInstance = null;
-            }
-            
-            document.getElementById('workCanvas').style.display = 'block';
-            currentArtwork = null;
-        }
-
-        // コードコピー機能
-        function copyCode(artworkId) {
-            const artwork = artworks.find(a => a.id === artworkId);
-            if (!artwork) return;
-
-            navigator.clipboard.writeText(artwork.codeString).then(() => {
-                const btn = event.target;
-                const originalText = btn.textContent;
-                btn.textContent = '✅';
-                btn.classList.add('copied');
-                
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.classList.remove('copied');
-                }, 2000);
-            }).catch(err => {
-                console.error('コピーに失敗:', err);
-                alert('コピーに失敗しました');
-            });
-        }
-
-        // 開発者モード
-        function toggleDevMode() {
-            const devMode = document.getElementById('devMode');
-            devMode.classList.toggle('active');
-        }
-
-        // 新作品追加/編集
-        function addNewWork(event) {
-            event.preventDefault();
-            
-            const title = document.getElementById('newTitle').value;
-            const description = document.getElementById('newDescription').value;
-            const tech = document.getElementById('newTech').value.split(',').map(t => t.trim());
-            const type = document.getElementById('newType').value;
-            const codeString = document.getElementById('newCode').value;
-
-            try {
-                let newArtwork;
-                
-                if (type === 'canvas') {
-                    const drawFunction = new Function('ctx', 'canvas', codeString);
-                    newArtwork = {
-                        id: editingArtworkId || 'custom-' + Date.now(),
-                        title: title,
-                        description: description,
-                        tech: tech,
-                        category: 'custom',
-                        type: 'canvas',
-                        codeString: codeString,
-                        drawFunction: drawFunction
-                    };
-                } else if (type === 'threejs') {
-                    const initFunction = new Function('container', codeString);
-                    newArtwork = {
-                        id: editingArtworkId || 'custom-' + Date.now(),
-                        title: title,
-                        description: description,
-                        tech: tech,
-                        category: 'custom',
-                        type: 'threejs',
-                        codeString: codeString,
-                        initFunction: initFunction
-                    };
-                }
-
-                if (editingArtworkId) {
-                    const index = artworks.findIndex(a => a.id === editingArtworkId);
-                    if (index !== -1) {
-                        artworks[index] = newArtwork;
-                        alert('作品を更新しました！');
-                    }
-                    editingArtworkId = null;
-                } else {
-                    artworks.push(newArtwork);
-                    alert('新作品を追加しました！');
-                }
-
-                generateWorkCards();
-                updateArtworkList();
-                
-                document.getElementById('newTitle').value = '';
-                document.getElementById('newDescription').value = '';
-                document.getElementById('newTech').value = '';
-                document.getElementById('newType').value = '';
-                document.getElementById('newCode').value = '';
-                
-                const submitBtn = document.querySelector('#addPanel button[type="submit"]');
-                submitBtn.textContent = '作品を追加';
-                submitBtn.style.background = 'var(--zen-accent)';
-                
-                toggleDevMode();
-                
-            } catch (error) {
-                alert('コードエラー: ' + error.message);
-            }
-        }
-
-        // Three.js背景（テーマ対応）
-        function initBackground() {
-            const canvas = document.getElementById('zen-canvas');
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-
-            const geometry = new THREE.BufferGeometry();
-            const particleCount = 100;
-            const positions = new Float32Array(particleCount * 3);
-
-            for (let i = 0; i < particleCount * 3; i += 3) {
-                positions[i] = (Math.random() - 0.5) * 20;
-                positions[i + 1] = (Math.random() - 0.5) * 20;
-                positions[i + 2] = (Math.random() - 0.5) * 20;
-            }
-
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-            const material = new THREE.PointsMaterial({
-                color: 0xd4af37,
-                size: 0.02,
-                transparent: true,
-                opacity: 0.6
-            });
-
-            const particles = new THREE.Points(geometry, material);
-            scene.add(particles);
-            camera.position.z = 10;
-
-            function animate() {
-                requestAnimationFrame(animate);
-                particles.rotation.y += 0.001;
-                renderer.render(scene, camera);
-            }
-            animate();
-
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-
-            // テーマ更新関数
-            backgroundInstance = {
-                updateTheme: function() {
-                    const isWashi = document.documentElement.dataset.theme === 'washi';
-                    material.color.setHex(isWashi ? 0x8b4513 : 0xd4af37);
-                }
-            };
-        }
-
-        // ESCキーでモーダル閉じる
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && currentArtwork) {
-                closeWorkModal();
-            }
-        });
-
-        // 初期化
-        document.addEventListener('DOMContentLoaded', () => {
-            hideLoading();
-            initBackground();
-            generateWorkCards();
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
-                });
-            }, { threshold: 0.2 });
-
-            document.querySelectorAll('.section-title').forEach(el => {
-                observer.observe(el);
-            });
-        });
-    </script>
-</body>
-</html>
+</section>
+<footer id="contact">
+<div class="footer-content">
+<p>© 2025 Digital Zen Garden - 継続的な美的探求の記録</p>
+</div>
+</footer>
+<!-- Work Modal -->
+<div class="work-modal" id="workModal">
+<div class="modal-header">
+<h3 class="modal-title" id="modalTitle">作品タイトル</h3>
+<button class="close-btn" id="closeModal">×</button>
+</div>
+<div class="modal-content">
+<canvas class="work-canvas" id="workCanvas"></canvas>
+</div>
+</div>
+<script></script></body></html>
