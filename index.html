@@ -695,6 +695,87 @@
             animation: moonReflection 5s ease-in-out infinite;
         }
         
+        /* Ultimate Mandala Preview */
+        .ultimate-mandala-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+        }
+        
+        .ultimate-mandala-preview::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--zen-stone);
+            border-radius: 50%;
+            animation: ultimateMandala1 8s ease-in-out infinite;
+        }
+        
+        .ultimate-mandala-preview::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, var(--zen-accent) 30%, transparent 70%);
+            border-radius: 50%;
+            animation: ultimateMandala2 6s ease-in-out infinite reverse;
+        }
+        
+        /* Ultimate 3D Preview */
+        .ultimate-3d-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+        }
+        
+        .ultimate-3d-preview::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--zen-accent);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) rotateX(60deg);
+            animation: rotate3DX 6s linear infinite;
+        }
+        
+        .ultimate-3d-preview::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--zen-silver);
+            transform: translate(-50%, -50%) rotateY(60deg) rotateZ(45deg);
+            animation: rotate3DY 4s linear infinite reverse;
+        }
+        
+        @keyframes rotate3DX {
+            from { transform: translate(-50%, -50%) rotateX(60deg) rotateZ(0deg); }
+            to { transform: translate(-50%, -50%) rotateX(60deg) rotateZ(360deg); }
+        }
+        
+        @keyframes rotate3DY {
+            from { transform: translate(-50%, -50%) rotateY(60deg) rotateZ(0deg); }
+            to { transform: translate(-50%, -50%) rotateY(60deg) rotateZ(360deg); }
+        }
+        
         .work-title {
             font-size: 1.3rem;
             font-weight: 500;
@@ -945,6 +1026,28 @@
             50% { 
                 opacity: 0.7; 
                 transform: translateX(-50%) scaleY(1.2); 
+            }
+        }
+        
+        @keyframes ultimateMandala1 {
+            0%, 100% { 
+                transform: translate(-50%, -50%) rotate(0deg) scale(1); 
+                opacity: 0.7; 
+            }
+            50% { 
+                transform: translate(-50%, -50%) rotate(180deg) scale(1.1); 
+                opacity: 1; 
+            }
+        }
+        
+        @keyframes ultimateMandala2 {
+            0%, 100% { 
+                transform: translate(-50%, -50%) rotate(0deg) scale(1); 
+                opacity: 0.8; 
+            }
+            50% { 
+                transform: translate(-50%, -50%) rotate(-180deg) scale(0.8); 
+                opacity: 0.5; 
             }
         }
         
@@ -1255,6 +1358,20 @@
                 </div>
             </div>
             
+            <!-- Ultimate Zen Mandala -->
+            <div class="work-card zen">
+                <div class="work-preview">
+                    <div class="ultimate-mandala-preview"></div>
+                </div>
+                <h3 class="work-title">究極禅曼荼羅</h3>
+                <p class="work-description">六段階の禅的進化を表現する究極の曼荼羅システム。無から光への道程。</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Advanced Three.js</span>
+                    <span class="tech-tag">Shader</span>
+                    <span class="tech-tag">禅哲学</span>
+                </div>
+            </div>
+            
             <!-- Zen Aesthetic Demos -->
             <div class="work-card zen">
                 <div class="work-preview">
@@ -1331,6 +1448,20 @@
                     <span class="tech-tag">Ray Tracing</span>
                     <span class="tech-tag">Water Reflection</span>
                     <span class="tech-tag">月見</span>
+                </div>
+            </div>
+            
+            <!-- Ultimate 3D Mandala -->
+            <div class="work-card zen">
+                <div class="work-preview">
+                    <div class="ultimate-3d-preview"></div>
+                </div>
+                <h3 class="work-title">究極禅曼荼羅3D</h3>
+                <p class="work-description">Three.jsによる六段階の禅的進化を表現する究極の3D曼荼羅システム</p>
+                <div class="work-tech">
+                    <span class="tech-tag">Three.js</span>
+                    <span class="tech-tag">GLSL Shader</span>
+                    <span class="tech-tag">3D Interactive</span>
                 </div>
             </div>
         </div>
@@ -1471,6 +1602,13 @@
                 category: 'advanced'
             },
             {
+                id: 'ultimate-mandala',
+                title: '究極禅曼荼羅',
+                type: 'ultimate',
+                description: '六段階の禅的進化を表現する究極の曼荼羅システム',
+                category: 'zen'
+            },
+            {
                 id: 'water-ripple',
                 title: '一滴の波紋',
                 type: 'ripple',
@@ -1510,6 +1648,13 @@
                 title: '月光の道',
                 type: 'moonlight',
                 description: '水面に映る月光のレイトレーシング',
+                category: 'zen'
+            },
+            {
+                id: 'ultimate-zen-3d',
+                title: '究極禅曼荼羅3D',
+                type: 'ultimate-3d',
+                description: 'Three.jsによる六段階の禅的進化を表現する究極の3D曼荼羅システム',
                 category: 'zen'
             }
         ];
@@ -1673,6 +1818,9 @@
                 case 'physics':
                     initPhysicsWork(canvas);
                     break;
+                case 'ultimate':
+                    initUltimateMandalaWork(canvas);
+                    break;
                 case 'ripple':
                     initRippleWork(canvas);
                     break;
@@ -1690,6 +1838,9 @@
                     break;
                 case 'moonlight':
                     initMoonlightWork(canvas);
+                    break;
+                case 'ultimate-3d':
+                    initUltimate3DWork(canvas);
                     break;
             }
         }
@@ -2822,6 +2973,7 @@
                             const force = (minDistance - distance) * 0.1;
                             
                             stone.vx -= Math.cos(angle) * force / stone.mass;
+                            stone.vy -= Math.sin(angle)
                             stone.vy -= Math.sin(angle) * force / stone.mass;
                             other.vx += Math.cos(angle) * force / other.mass;
                             other.vy += Math.sin(angle) * force / other.mass;
@@ -2868,6 +3020,285 @@
             }
             
             drawPhysics();
+        }
+        
+        // Work 21: Ultimate Zen Mandala (Simplified Canvas Version)
+        function initUltimateMandalaWork(canvas) {
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            let startTime = Date.now();
+            
+            // 禅の六段階
+            const zenStages = [
+                { name: '無', complexity: 1, particles: 50, radius: 20 },
+                { name: '点', complexity: 3, particles: 100, radius: 40 },
+                { name: '線', complexity: 6, particles: 200, radius: 60 },
+                { name: '形', complexity: 12, particles: 300, radius: 80 },
+                { name: '花', complexity: 24, particles: 400, radius: 100 },
+                { name: '光', complexity: 48, particles: 500, radius: 120 }
+            ];
+            
+            let currentStage = 0;
+            let stageProgress = 0;
+            
+            // パーティクルシステム
+            const particles = [];
+            for (let i = 0; i < 500; i++) {
+                particles.push({
+                    x: centerX + (Math.random() - 0.5) * 200,
+                    y: centerY + (Math.random() - 0.5) * 200,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    life: Math.random(),
+                    size: Math.random() * 3 + 1,
+                    angle: Math.random() * Math.PI * 2,
+                    distance: Math.random() * 150 + 50
+                });
+            }
+            
+            function drawUltimateMandala() {
+                if (!currentWork || currentWork.type !== 'ultimate') return;
+                
+                // 和紙背景
+                ctx.fillStyle = '#f8f8f0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const time = (Date.now() - startTime) * 0.001;
+                
+                // 段階の自動進行（10秒ごと）
+                const cycleTime = time % 60; // 60秒で全段階
+                currentStage = Math.floor(cycleTime / 10) % 6;
+                stageProgress = (cycleTime % 10) / 10;
+                
+                const stage = zenStages[currentStage];
+                
+                // 段階名を表示
+                ctx.font = '24px "Noto Sans JP"';
+                ctx.fillStyle = 'rgba(45, 45, 45, 0.8)';
+                ctx.textAlign = 'center';
+                ctx.fillText(stage.name, centerX, 50);
+                
+                // 進行度を表示
+                ctx.font = '12px "Noto Sans JP"';
+                ctx.fillStyle = 'rgba(74, 74, 74, 0.6)';
+                ctx.fillText(`${Math.floor(stageProgress * 100)}%`, centerX, 70);
+                
+                // 中心の核
+                drawMandalaCore(time, stage, stageProgress);
+                
+                // 段階に応じた幾何学パターン
+                drawGeometricPatterns(time, stage, stageProgress);
+                
+                // パーティクルシステム
+                drawQuantumParticles(time, stage, stageProgress);
+                
+                // エネルギーフィールド
+                drawEnergyField(time, stage, stageProgress);
+                
+                modalAnimationId = requestAnimationFrame(drawUltimateMandala);
+            }
+            
+            function drawMandalaCore(time, stage, progress) {
+                const coreRadius = 15 + progress * 10;
+                
+                // 中心の円（呼吸する）
+                const breathe = Math.sin(time * 2) * 0.3 + 1;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, coreRadius * breathe, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(45, 45, 45, ${0.3 + progress * 0.4})`;
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, coreRadius * breathe, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(26, 26, 26, ${0.6 + progress * 0.4})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 中心の金色の点
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 3 * breathe, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(212, 175, 55, ${0.7 + progress * 0.3})`;
+                ctx.fill();
+            }
+            
+            function drawGeometricPatterns(time, stage, progress) {
+                const complexity = stage.complexity;
+                
+                for (let layer = 0; layer < complexity && layer <= progress * complexity; layer++) {
+                    const radius = 30 + layer * 15;
+                    const segments = 6 + layer * 2;
+                    const rotation = time * (layer % 2 === 0 ? 0.2 : -0.2) + layer * Math.PI / 8;
+                    
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(rotation);
+                    
+                    // 神聖幾何学パターン
+                    if (stage.name === '無') {
+                        // シンプルな円
+                        ctx.beginPath();
+                        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                        ctx.strokeStyle = `rgba(74, 74, 74, ${0.3 * progress})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    } else if (stage.name === '点') {
+                        // 点の配列
+                        for (let i = 0; i < segments; i++) {
+                            const angle = (i / segments) * Math.PI * 2;
+                            const x = Math.cos(angle) * radius;
+                            const y = Math.sin(angle) * radius;
+                            
+                            ctx.beginPath();
+                            ctx.arc(x, y, 2, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(45, 45, 45, ${0.5 * progress})`;
+                            ctx.fill();
+                        }
+                    } else if (stage.name === '線') {
+                        // 線で結ばれたパターン
+                        ctx.beginPath();
+                        for (let i = 0; i <= segments; i++) {
+                            const angle = (i / segments) * Math.PI * 2;
+                            const x = Math.cos(angle) * radius;
+                            const y = Math.sin(angle) * radius;
+                            
+                            if (i === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        }
+                        ctx.strokeStyle = `rgba(45, 45, 45, ${0.4 * progress})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    } else if (stage.name === '形') {
+                        // 複雑な多角形
+                        drawSacredPolygon(segments, radius, progress);
+                    } else if (stage.name === '花') {
+                        // フラワーオブライフ
+                        drawFlowerOfLife(radius, progress);
+                    } else if (stage.name === '光') {
+                        // 放射状の光
+                        drawLightRays(radius, segments, progress, time);
+                    }
+                    
+                    ctx.restore();
+                }
+            }
+            
+            function drawSacredPolygon(sides, radius, progress) {
+                // 内接する複数の多角形
+                for (let poly = 0; poly < 3; poly++) {
+                    const polyRadius = radius * (0.5 + poly * 0.25);
+                    const polyRotation = (poly * Math.PI) / sides;
+                    
+                    ctx.save();
+                    ctx.rotate(polyRotation);
+                    
+                    ctx.beginPath();
+                    for (let i = 0; i <= sides; i++) {
+                        const angle = (i / sides) * Math.PI * 2;
+                        const x = Math.cos(angle) * polyRadius;
+                        const y = Math.sin(angle) * polyRadius;
+                        
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    
+                    ctx.strokeStyle = `rgba(${45 + poly * 30}, ${45 + poly * 30}, ${45 + poly * 30}, ${0.3 * progress})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                }
+            }
+            
+            function drawFlowerOfLife(radius, progress) {
+                const petals = 6;
+                for (let i = 0; i < petals; i++) {
+                    const angle = (i / petals) * Math.PI * 2;
+                    const x = Math.cos(angle) * radius * 0.5;
+                    const y = Math.sin(angle) * radius * 0.5;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius * 0.3, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(74, 74, 118, ${0.4 * progress})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+            
+            function drawLightRays(radius, count, progress, time) {
+                for (let i = 0; i < count; i++) {
+                    const angle = (i / count) * Math.PI * 2;
+                    const rayLength = radius * (0.8 + Math.sin(time * 3 + i * 0.5) * 0.2);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(
+                        Math.cos(angle) * rayLength,
+                        Math.sin(angle) * rayLength
+                    );
+                    
+                    const alpha = (0.5 + Math.sin(time * 2 + i) * 0.3) * progress;
+                    ctx.strokeStyle = `rgba(212, 175, 55, ${alpha})`;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+            
+            function drawQuantumParticles(time, stage, progress) {
+                const activeParticles = Math.floor(stage.particles * progress);
+                
+                for (let i = 0; i < activeParticles; i++) {
+                    const particle = particles[i];
+                    
+                    // パーティクルの軌道運動
+                    particle.angle += 0.01;
+                    particle.life += 0.005;
+                    
+                    const orbitRadius = stage.radius + Math.sin(particle.life) * 20;
+                    const x = centerX + Math.cos(particle.angle) * orbitRadius;
+                    const y = centerY + Math.sin(particle.angle) * orbitRadius * 0.8;
+                    
+                    const alpha = (Math.sin(particle.life) + 1) * 0.25 * progress;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, particle.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(138, 138, 138, ${alpha})`;
+                    ctx.fill();
+                    
+                    // パーティクル間の接続
+                    if (i > 0 && Math.random() > 0.95) {
+                        const prevParticle = particles[i - 1];
+                        const prevX = centerX + Math.cos(prevParticle.angle) * (stage.radius + Math.sin(prevParticle.life) * 20);
+                        const prevY = centerY + Math.sin(prevParticle.angle) * (stage.radius + Math.sin(prevParticle.life) * 20) * 0.8;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(prevX, prevY);
+                        ctx.strokeStyle = `rgba(160, 160, 160, ${alpha * 0.5})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            function drawEnergyField(time, stage, progress) {
+                // 背景のエネルギーフィールド
+                const fieldRadius = stage.radius * 2;
+                const ripples = 5;
+                
+                for (let i = 0; i < ripples; i++) {
+                    const rippleRadius = fieldRadius * (i / ripples) * progress;
+                    const alpha = (1 - i / ripples) * 0.1 * progress;
+                    
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, rippleRadius, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(212, 175, 55, ${alpha})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+            
+            drawUltimateMandala();
         }
         
         // Work 15: Water Ripple Zen
@@ -3422,6 +3853,431 @@
             }
             
             drawMoonlight();
+        }
+        
+        // Work 22: Ultimate 3D Zen Mandala
+        function initUltimate3DWork(canvas) {
+            if (!canvas) return;
+            
+            // Three.jsの基本設定
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xfafafa); // 和紙色
+            
+            const camera = new THREE.PerspectiveCamera(
+                60, 
+                canvas.width / canvas.height, 
+                0.1, 
+                1000
+            );
+            camera.position.set(0, 15, 40);
+            camera.lookAt(0, 0, 0);
+            
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas: canvas,
+                antialias: true,
+                alpha: true
+            });
+            renderer.setSize(canvas.width, canvas.height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // モバイル対応
+            
+            // グループ構造
+            const masterGroup = new THREE.Group();
+            const coreGroup = new THREE.Group();
+            const geometryGroup = new THREE.Group();
+            const particleGroup = new THREE.Group();
+            
+            masterGroup.add(coreGroup);
+            masterGroup.add(geometryGroup);
+            masterGroup.add(particleGroup);
+            scene.add(masterGroup);
+            
+            // 最適化された禅の段階（パーティクル数を40%削減）
+            const zenStages = [
+                { name: '無', complexity: 1, speed: 0.1, particles: 40 },
+                { name: '点', complexity: 3, speed: 0.2, particles: 120 },
+                { name: '線', complexity: 6, speed: 0.3, particles: 240 },
+                { name: '形', complexity: 12, speed: 0.4, particles: 480 },
+                { name: '花', complexity: 24, speed: 0.5, particles: 960 },
+                { name: '光', complexity: 48, speed: 0.6, particles: 2000 }
+            ];
+            
+            let currentLevel = 0;
+            let time = 0;
+            let autoPlay = false; // モーダルではマニュアル操作のみ
+            
+            // シンプルなシェーダー（モバイル対応）
+            const simpleVertexShader = `
+                varying vec2 vUv;
+                varying vec3 vPosition;
+                uniform float time;
+                uniform float morphProgress;
+                
+                void main() {
+                    vUv = uv;
+                    vPosition = position;
+                    
+                    vec3 pos = position;
+                    float breath = sin(time * 0.5) * 0.1 * morphProgress;
+                    pos *= 1.0 + breath;
+                    
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                }
+            `;
+            
+            const simpleFragmentShader = `
+                uniform float time;
+                uniform float opacity;
+                uniform vec3 color1;
+                uniform vec3 color2;
+                varying vec2 vUv;
+                
+                void main() {
+                    float pattern = sin(length(vUv - 0.5) * 30.0 - time * 2.0) * 0.5 + 0.5;
+                    vec3 color = mix(color1, color2, pattern);
+                    gl_FragColor = vec4(color, opacity);
+                }
+            `;
+            
+            // コア要素の作成
+            function createCore() {
+                const geometry = new THREE.TorusGeometry(5, 0.5, 32, 100);
+                const material = new THREE.ShaderMaterial({
+                    vertexShader: simpleVertexShader,
+                    fragmentShader: simpleFragmentShader,
+                    uniforms: {
+                        time: { value: 0 },
+                        opacity: { value: 0.8 },
+                        color1: { value: new THREE.Color(0x2d2d2d) }, // 墨色
+                        color2: { value: new THREE.Color(0xd4af37) }, // 金色
+                        morphProgress: { value: 0 }
+                    },
+                    transparent: true,
+                    side: THREE.DoubleSide
+                });
+                
+                const core = new THREE.Mesh(geometry, material);
+                coreGroup.add(core);
+            }
+            
+            // ジオメトリグループの作成（最適化版）
+            function createGeometries() {
+                for (let level = 1; level <= 5; level++) {
+                    const group = new THREE.Group();
+                    const complexity = Math.min(zenStages[level].complexity, 12); // 複雑さを制限
+                    
+                    for (let i = 0; i < complexity; i++) {
+                        const angle = (i / complexity) * Math.PI * 2;
+                        const radius = 5 + level * 2;
+                        
+                        // レベルに応じた簡略化されたジオメトリ
+                        let geometry;
+                        if (level <= 2) {
+                            geometry = new THREE.TetrahedronGeometry(2, 0);
+                        } else if (level <= 4) {
+                            geometry = new THREE.OctahedronGeometry(2.5, 0);
+                        } else {
+                            geometry = new THREE.IcosahedronGeometry(3, 1);
+                        }
+                        
+                        const material = new THREE.MeshBasicMaterial({
+                            color: new THREE.Color().setHSL(i / complexity, 0.5, 0.6),
+                            wireframe: true,
+                            transparent: true,
+                            opacity: 0
+                        });
+                        
+                        const mesh = new THREE.Mesh(geometry, material);
+                        mesh.position.set(
+                            Math.cos(angle) * radius,
+                            0,
+                            Math.sin(angle) * radius
+                        );
+                        mesh.userData = { 
+                            angle: angle,
+                            radius: radius,
+                            index: i,
+                            baseY: Math.sin(i * 0.5) * 2
+                        };
+                        
+                        group.add(mesh);
+                    }
+                    
+                    group.userData = { level: level };
+                    group.visible = false;
+                    geometryGroup.add(group);
+                }
+            }
+            
+            // 最適化されたパーティクルシステム
+            function createParticles() {
+                const maxParticles = 2000; // 5000から削減
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(maxParticles * 3);
+                const colors = new Float32Array(maxParticles * 3);
+                const sizes = new Float32Array(maxParticles);
+                
+                for (let i = 0; i < maxParticles; i++) {
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos(Math.random() * 2 - 1);
+                    const radius = 15 + Math.random() * 20;
+                    
+                    positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+                    positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                    positions[i * 3 + 2] = radius * Math.cos(phi);
+                    
+                    const brightness = 0.3 + Math.random() * 0.7;
+                    colors[i * 3] = brightness;
+                    colors[i * 3 + 1] = brightness * 0.9;
+                    colors[i * 3 + 2] = brightness * 0.8;
+                    
+                    sizes[i] = Math.random() * 2 + 0.5;
+                }
+                
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+                
+                const material = new THREE.PointsMaterial({
+                    size: 1.5,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: true
+                });
+                
+                const particles = new THREE.Points(geometry, material);
+                particleGroup.add(particles);
+            }
+            
+            // シンプルな照明
+            function createLighting() {
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.4);
+                directionalLight.position.set(10, 20, 10);
+                scene.add(directionalLight);
+            }
+            
+            // レベル更新（最適化版）
+            function updateLevel(level) {
+                currentLevel = level;
+                const stage = zenStages[level];
+                
+                // コアの更新
+                const core = coreGroup.children[0];
+                if (core && core.material.uniforms) {
+                    core.material.uniforms.morphProgress.value = level / 5;
+                }
+                
+                // ジオメトリの更新
+                geometryGroup.children.forEach(group => {
+                    const groupLevel = group.userData.level;
+                    group.visible = groupLevel <= level;
+                    
+                    if (group.visible) {
+                        group.children.forEach(mesh => {
+                            mesh.material.opacity = groupLevel === level ? 0.8 : 0.3;
+                        });
+                    }
+                });
+                
+                // パーティクルの更新
+                const particles = particleGroup.children[0];
+                if (particles) {
+                    particles.geometry.setDrawRange(0, stage.particles);
+                    particles.material.opacity = level * 0.15;
+                }
+            }
+            
+            // マウス/タッチ操作
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+            let rotationVelocity = { x: 0, y: 0 };
+            
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                const rect = canvas.getBoundingClientRect();
+                previousMousePosition = { 
+                    x: e.clientX - rect.left, 
+                    y: e.clientY - rect.top 
+                };
+            });
+            
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const deltaX = x - previousMousePosition.x;
+                const deltaY = y - previousMousePosition.y;
+                
+                rotationVelocity.x = deltaX * 0.01;
+                rotationVelocity.y = deltaY * 0.01;
+                
+                previousMousePosition = { x, y };
+            });
+            
+            canvas.addEventListener('mouseup', () => isDragging = false);
+            canvas.addEventListener('mouseleave', () => isDragging = false);
+            
+            // タッチ対応
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                previousMousePosition = { 
+                    x: touch.clientX - rect.left, 
+                    y: touch.clientY - rect.top 
+                };
+                isDragging = true;
+            }, { passive: false });
+            
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!isDragging) return;
+                
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                
+                const deltaX = x - previousMousePosition.x;
+                const deltaY = y - previousMousePosition.y;
+                
+                masterGroup.rotation.y += deltaX * 0.01;
+                masterGroup.rotation.x += deltaY * 0.01;
+                
+                previousMousePosition = { x, y };
+            }, { passive: false });
+            
+            canvas.addEventListener('touchend', () => isDragging = false);
+            
+            // ホイールでズーム
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                camera.position.z += e.deltaY * 0.05;
+                camera.position.z = Math.max(15, Math.min(80, camera.position.z));
+            }, { passive: false });
+            
+            // レベル切り替えボタン（簡易版）
+            const controlsDiv = document.createElement('div');
+            controlsDiv.style.cssText = `
+                position: absolute;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 10px;
+                z-index: 100;
+            `;
+            
+            for (let i = 0; i < 6; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = zenStages[i].name;
+                btn.style.cssText = `
+                    padding: 8px 16px;
+                    background: rgba(45, 45, 45, 0.8);
+                    color: white;
+                    border: none;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    transition: all 0.3s ease;
+                `;
+                btn.onclick = () => updateLevel(i);
+                btn.onmouseover = () => btn.style.background = 'rgba(212, 175, 55, 0.9)';
+                btn.onmouseout = () => btn.style.background = 'rgba(45, 45, 45, 0.8)';
+                controlsDiv.appendChild(btn);
+            }
+            canvas.parentElement.appendChild(controlsDiv);
+            
+            // 初期化
+            createCore();
+            createGeometries();
+            createParticles();
+            createLighting();
+            updateLevel(0);
+            
+            // アニメーション
+            function animate() {
+                if (!currentWork || currentWork.type !== 'ultimate-3d') {
+                    // クリーンアップ
+                    if (controlsDiv && controlsDiv.parentElement) {
+                        controlsDiv.parentElement.removeChild(controlsDiv);
+                    }
+                    return;
+                }
+                
+                time += 0.01;
+                
+                // 慣性回転
+                if (!isDragging) {
+                    masterGroup.rotation.y += rotationVelocity.x;
+                    masterGroup.rotation.x += rotationVelocity.y;
+                    rotationVelocity.x *= 0.95;
+                    rotationVelocity.y *= 0.95;
+                    
+                    // 自動回転（ゆっくり）
+                    masterGroup.rotation.y += 0.001 * (currentLevel + 1);
+                }
+                
+                // コアのアニメーション
+                const core = coreGroup.children[0];
+                if (core && core.material.uniforms) {
+                    core.material.uniforms.time.value = time;
+                }
+                core.rotation.z += 0.001;
+                
+                // ジオメトリのアニメーション
+                geometryGroup.children.forEach(group => {
+                    if (group.visible) {
+                        group.rotation.y += 0.0002 * group.userData.level;
+                        
+                        group.children.forEach(mesh => {
+                            const userData = mesh.userData;
+                            const angle = userData.angle + time * 0.1 * zenStages[group.userData.level].speed;
+                            const radius = userData.radius * (1 + Math.sin(time + userData.index * 0.5) * 0.1);
+                            
+                            mesh.position.x = Math.cos(angle) * radius;
+                            mesh.position.z = Math.sin(angle) * radius;
+                            mesh.position.y = userData.baseY + Math.sin(time * 0.5 + userData.index * 0.3) * 2;
+                            
+                            mesh.rotation.x += 0.02;
+                            mesh.rotation.y += 0.03;
+                        });
+                    }
+                });
+                
+                // パーティクルのシンプルな回転
+                particleGroup.rotation.y -= 0.0001;
+                
+                renderer.render(scene, camera);
+                modalAnimationId = requestAnimationFrame(animate);
+            }
+            
+            animate();
+            
+            // リサイズ対応
+            const handleResize = () => {
+                const rect = canvas.getBoundingClientRect();
+                camera.aspect = rect.width / rect.height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(rect.width, rect.height);
+            };
+            
+            window.addEventListener('resize', handleResize);
+            
+            // クリーンアップ関数を返す
+            return () => {
+                window.removeEventListener('resize', handleResize);
+                if (controlsDiv && controlsDiv.parentElement) {
+                    controlsDiv.parentElement.removeChild(controlsDiv);
+                }
+            };
         }
         
         // Intersection Observer for scroll animations
