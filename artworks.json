@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Zen Garden",
+    "image": "images/zen-garden.png",
+    "prompt": "A tranquil digital zen garden with raked sand, stones, and bonsai, rendered in a minimalist style",
+    "code": "// GLSL code or SVG snippet here\nvoid main() {\n  gl_FragColor = vec4(1.0);\n}"
+  },
+  {
+    "title": "Fractal Bloom",
+    "image": "images/fractal-bloom.png",
+    "prompt": "Fractal-inspired blooming flowers in vibrant digital ink, reminiscent of generative art",
+    "code": "// JavaScript generative pattern example\nfunction draw() {\n  ellipse(width/2, height/2, 100, 100);\n}"
+  }
+]
