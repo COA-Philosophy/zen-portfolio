@@ -1,91 +1,1444 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Zen Portfolio</title>
-  <style>
-    body {
-      background-color: #f4f4f4;
-      font-family: 'Helvetica Neue', sans-serif;
-      margin: 0;
-      padding: 2rem;
-    }
-    .gallery {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-    }
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      padding: 16px;
-      width: 320px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .card img {
-      max-width: 100%;
-      border-radius: 8px;
-    }
-    .card h2 {
-      font-size: 1.1rem;
-      margin: 0.5rem 0;
-    }
-    .buttons {
-      margin-top: 1rem;
-      display: flex;
-      gap: 10px;
-    }
-    .buttons button {
-      padding: 6px 10px;
-      font-size: 0.9rem;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background-color: #333;
-      color: white;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZEN Art Portfolio - 禅的実験室</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ===== ZEN DESIGN SYSTEM ===== */
+        :root {
+            /* 和風色彩パレット */
+            --zen-void: #000000;          /* 虚無 */
+            --zen-sumi: #2d2d2d;          /* 墨色 */
+            --zen-charcoal: #4a4a4a;      /* 炭色 */
+            --zen-stone: #6a6a6a;         /* 石色 */
+            --zen-silver: #8a8a8a;        /* 銀色 */
+            --zen-mist: #b8b8b8;          /* 霧色 */
+            --zen-pearl: #e8e8e8;         /* 真珠色 */
+            --zen-washi: #f8f8f0;         /* 和紙色 */
+            --zen-pure: #ffffff;          /* 純白 */
+            --zen-gold: #d4af37;          /* 金色 */
+            --zen-copper: #b87333;        /* 銅色 */
+            --zen-accent: var(--zen-gold);
+            
+            /* 黄金比ベースの空間システム */
+            --golden-ratio: 1.618;
+            --space-xs: 0.25rem;
+            --space-sm: calc(var(--space-xs) * var(--golden-ratio));
+            --space-md: calc(var(--space-sm) * var(--golden-ratio));
+            --space-lg: calc(var(--space-md) * var(--golden-ratio));
+            --space-xl: calc(var(--space-lg) * var(--golden-ratio));
+            --space-2xl: calc(var(--space-xl) * var(--golden-ratio));
+            
+            /* イージング曲線 */
+            --ease-breathing: cubic-bezier(0.4, 0.0, 0.2, 1);
+            --ease-meditation: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --ease-zen: cubic-bezier(0.23, 1, 0.32, 1);
+            --ease-ink: cubic-bezier(0.645, 0.045, 0.355, 1);
+            
+            /* タイポグラフィスケール */
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            --font-size-3xl: 1.875rem;
+            --font-size-4xl: 2.25rem;
+            --font-size-5xl: 3rem;
+            --font-size-6xl: 3.75rem;
+            
+            /* シャドウシステム */
+            --shadow-ink: 0 2px 8px rgba(45, 45, 45, 0.1);
+            --shadow-paper: 0 4px 16px rgba(45, 45, 45, 0.08);
+            --shadow-floating: 0 8px 32px rgba(45, 45, 45, 0.12);
+            --shadow-elevated: 0 16px 64px rgba(45, 45, 45, 0.16);
+        }
+        
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        ::selection {
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--zen-sumi);
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+        
+        body {
+            font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--zen-washi);
+            color: var(--zen-sumi);
+            line-height: var(--golden-ratio);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* ===== THREE.JS BACKGROUND ===== */
+        #zen-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.4;
+        }
+        
+        /* ===== NAVIGATION ===== */
+        .nav-wrapper {
+            position: fixed;
+            top: var(--space-lg);
+            right: var(--space-lg);
+            z-index: 1000;
+            display: flex;
+            gap: var(--space-md);
+        }
+        
+        .nav-container {
+            padding: var(--space-sm) var(--space-lg);
+            background: rgba(248, 248, 240, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 50px;
+            border: 1px solid rgba(45, 45, 45, 0.1);
+            box-shadow: var(--shadow-floating);
+            display: flex;
+            gap: var(--space-lg);
+            transition: all 0.4s var(--ease-zen);
+        }
+        
+        .nav-container:hover {
+            background: rgba(248, 248, 240, 0.98);
+            border-color: rgba(212, 175, 55, 0.3);
+            box-shadow: var(--shadow-elevated);
+        }
+        
+        .nav-item {
+            color: var(--zen-charcoal);
+            text-decoration: none;
+            font-weight: 400;
+            font-size: var(--font-size-sm);
+            transition: all 0.3s var(--ease-breathing);
+            position: relative;
+            padding: var(--space-xs) 0;
+        }
+        
+        .nav-item:hover {
+            color: var(--zen-accent);
+            transform: translateY(-1px);
+        }
+        
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 1px;
+            background: var(--zen-accent);
+            transition: all 0.3s var(--ease-meditation);
+            transform: translateX(-50%);
+        }
+        
+        .nav-item:hover::after {
+            width: 100%;
+        }
+        
+        /* ===== HERO SECTION ===== */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: var(--space-lg);
+            position: relative;
+            background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.02), transparent 70%);
+        }
+        
+        .hero-title {
+            font-size: clamp(var(--font-size-4xl), 8vw, var(--font-size-6xl));
+            font-weight: 300;
+            margin-bottom: var(--space-md);
+            opacity: 0;
+            animation: breatheIn 2s var(--ease-meditation) 0.5s forwards;
+            letter-spacing: 0.02em;
+            color: var(--zen-sumi);
+            position: relative;
+        }
+        
+        .hero-title::after {
+            content: '';
+            position: absolute;
+            bottom: -var(--space-sm);
+            left: 50%;
+            width: 60px;
+            height: 1px;
+            background: var(--zen-accent);
+            transform: translateX(-50%);
+            opacity: 0;
+            animation: breatheIn 2s var(--ease-meditation) 1.5s forwards;
+        }
+        
+        .hero-subtitle {
+            font-size: clamp(var(--font-size-lg), 3vw, var(--font-size-2xl));
+            font-weight: 300;
+            color: var(--zen-stone);
+            opacity: 0;
+            animation: breatheIn 2s var(--ease-meditation) 1s forwards;
+            margin-bottom: var(--space-2xl);
+            max-width: 600px;
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: var(--space-2xl);
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            animation: breatheIn 2s var(--ease-meditation) 2s forwards;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .scroll-line {
+            width: 1px;
+            height: calc(var(--space-xl) * 2);
+            background: linear-gradient(to bottom, transparent, var(--zen-accent), transparent);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        .scroll-text {
+            font-size: var(--font-size-xs);
+            color: var(--zen-silver);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        /* ===== WORKS SECTION ===== */
+        .works-section {
+            padding: calc(var(--space-2xl) * 2) var(--space-lg);
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .section-title {
+            font-size: clamp(var(--font-size-3xl), 5vw, var(--font-size-5xl));
+            font-weight: 300;
+            text-align: center;
+            margin-bottom: calc(var(--space-xl) * 2);
+            color: var(--zen-sumi);
+            opacity: 0;
+            transform: translateY(2rem);
+            transition: all 1s var(--ease-meditation);
+            position: relative;
+        }
+        
+        .section-title.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 20%;
+            width: 80px;
+            height: 1px;
+            background: var(--zen-accent);
+            transform: translateY(-50%);
+            opacity: 0.5;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 20%;
+            width: 80px;
+            height: 1px;
+            background: var(--zen-accent);
+            transform: translateY(-50%);
+            opacity: 0.5;
+        }
+        
+        /* ===== WORKS GRID ===== */
+        .works-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: var(--space-xl);
+            margin-bottom: calc(var(--space-xl) * 3);
+        }
+        
+        .work-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: var(--space-lg);
+            border: 1px solid rgba(45, 45, 45, 0.05);
+            backdrop-filter: blur(10px);
+            transition: all 0.5s var(--ease-zen);
+            opacity: 0;
+            transform: translateY(3rem);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-paper);
+        }
+        
+        .work-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.05), transparent);
+            transition: left 0.8s var(--ease-meditation);
+            z-index: 1;
+        }
+        
+        .work-card:hover::before {
+            left: 100%;
+        }
+        
+        .work-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .work-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(212, 175, 55, 0.2);
+            box-shadow: var(--shadow-elevated);
+            background: rgba(255, 255, 255, 0.98);
+        }
+        
+        /* ===== WORK PREVIEW CANVAS ===== */
+        .work-preview {
+            width: 100%;
+            height: 240px;
+            background: var(--zen-washi);
+            border-radius: 12px;
+            margin-bottom: var(--space-lg);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(45, 45, 45, 0.08);
+            z-index: 2;
+        }
+        
+        .preview-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        /* ===== WORK CARD CONTENT ===== */
+        .work-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .work-title {
+            font-size: var(--font-size-xl);
+            font-weight: 500;
+            margin-bottom: var(--space-sm);
+            color: var(--zen-sumi);
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        
+        .work-subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--zen-accent);
+            margin-bottom: var(--space-md);
+            font-weight: 400;
+        }
+        
+        .work-description {
+            color: var(--zen-stone);
+            font-size: var(--font-size-sm);
+            line-height: var(--golden-ratio);
+            margin-bottom: var(--space-lg);
+        }
+        
+        .work-actions {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+        
+        .action-btn {
+            flex: 1;
+            background: var(--zen-sumi);
+            color: var(--zen-washi);
+            border: none;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+            transition: all 0.3s var(--ease-breathing);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--zen-accent);
+            transition: left 0.3s var(--ease-breathing);
+            z-index: -1;
+        }
+        
+        .action-btn:hover::before {
+            left: 0;
+        }
+        
+        .action-btn:hover {
+            color: var(--zen-sumi);
+            transform: translateY(-1px);
+        }
+        
+        .work-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+        }
+        
+        .tech-tag {
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--zen-accent);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 16px;
+            font-size: var(--font-size-xs);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            font-weight: 400;
+        }
+        
+        /* ===== MODAL SYSTEM ===== */
+        .work-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(45, 45, 45, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.5s var(--ease-meditation);
+        }
+        
+        .work-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-header {
+            padding: var(--space-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(232, 232, 232, 0.1);
+            background: rgba(248, 248, 240, 0.05);
+        }
+        
+        .modal-title {
+            color: var(--zen-washi);
+            font-size: var(--font-size-2xl);
+            font-weight: 300;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        
+        .close-btn {
+            background: rgba(248, 248, 240, 0.1);
+            border: 1px solid rgba(248, 248, 240, 0.2);
+            color: var(--zen-washi);
+            font-size: var(--font-size-2xl);
+            cursor: pointer;
+            padding: var(--space-sm);
+            transition: all 0.3s var(--ease-breathing);
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            background: var(--zen-accent);
+            color: var(--zen-sumi);
+            transform: rotate(90deg);
+        }
+        
+        .modal-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: var(--zen-washi);
+        }
+        
+        .work-canvas {
+            width: 100%;
+            height: 100%;
+            background: var(--zen-washi);
+            display: block;
+        }
+        
+        /* ===== PHILOSOPHY SECTION ===== */
+        .philosophy-section {
+            padding: calc(var(--space-2xl) * 2) var(--space-lg);
+            background: linear-gradient(135deg, rgba(45, 45, 45, 0.02), rgba(212, 175, 55, 0.02));
+            text-align: center;
+            position: relative;
+        }
+        
+        .philosophy-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--zen-accent), transparent);
+            opacity: 0.3;
+        }
+        
+        .philosophy-text {
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: var(--font-size-lg);
+            line-height: calc(var(--golden-ratio) * 1.2);
+            color: var(--zen-stone);
+            opacity: 0;
+            transform: translateY(2rem);
+            transition: all 1s var(--ease-meditation);
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        
+        .philosophy-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* ===== FOOTER ===== */
+        footer {
+            padding: calc(var(--space-xl) * 2) var(--space-lg) var(--space-lg);
+            text-align: center;
+            border-top: 1px solid rgba(45, 45, 45, 0.1);
+            background: rgba(248, 248, 240, 0.5);
+        }
+        
+        .footer-content {
+            color: var(--zen-silver);
+            font-size: var(--font-size-sm);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* ===== ANIMATIONS ===== */
+        @keyframes breatheIn {
+            from {
+                opacity: 0;
+                transform: translateY(2rem);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 0.4; 
+                transform: scaleY(1);
+            }
+            50% { 
+                opacity: 1; 
+                transform: scaleY(1.2);
+            }
+        }
+        
+        @keyframes inkDrop {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes zenRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes breathingScale {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            :root {
+                --space-xs: 0.25rem;
+                --space-sm: 0.5rem;
+                --space-md: 0.75rem;
+                --space-lg: 1rem;
+                --space-xl: 1.5rem;
+                --space-2xl: 2rem;
+            }
+            
+            .nav-wrapper {
+                top: var(--space-md);
+                right: var(--space-md);
+                left: var(--space-md);
+            }
+            
+            .nav-container {
+                justify-content: center;
+                gap: var(--space-md);
+                padding: var(--space-sm) var(--space-md);
+            }
+            
+            .works-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-lg);
+            }
+            
+            .work-card {
+                padding: var(--space-md);
+            }
+            
+            .work-preview {
+                height: 200px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero {
+                padding: var(--space-md);
+            }
+            
+            .works-section {
+                padding: var(--space-xl) var(--space-md);
+            }
+            
+            .philosophy-section {
+                padding: var(--space-xl) var(--space-md);
+            }
+        }
+        
+        /* ===== ACCESSIBILITY ===== */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .scroll-line {
+                animation: none;
+            }
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --zen-washi: #1a1a1a;
+                --zen-pure: #2d2d2d;
+                --zen-sumi: #e8e8e8;
+                --zen-stone: #b8b8b8;
+                --zen-silver: #8a8a8a;
+            }
+        }
+        
+        /* ===== HIGH DPI SUPPORT ===== */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .work-preview {
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Zen Portfolio</h1>
-  <div class="gallery" id="gallery"></div>
+    <!-- Three.js Background Canvas -->
+    <canvas id="zen-canvas"></canvas>
+    
+    <!-- Navigation -->
+    <div class="nav-wrapper">
+        <nav class="nav-container">
+            <a href="#works" class="nav-item">作品</a>
+            <a href="#philosophy" class="nav-item">哲学</a>
+            <a href="#contact" class="nav-item">結縁</a>
+        </nav>
+    </div>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1 class="hero-title">ZEN Art Portfolio</h1>
+        <p class="hero-subtitle">技術と瞑想の交差点で生まれる美的実験</p>
+        <div class="scroll-indicator">
+            <div class="scroll-line"></div>
+            <span class="scroll-text">scroll</span>
+        </div>
+    </section>
+    
+    <!-- Works Section -->
+    <section id="works" class="works-section">
+        <h2 class="section-title">禅的技術実験</h2>
+        <div id="gallery" class="works-grid"></div>
+    </section>
+    
+    <!-- Philosophy Section -->
+    <section id="philosophy" class="philosophy-section">
+        <h2 class="section-title">哲学</h2>
+        <div class="philosophy-text">
+            墨が和紙に滲む瞬間の美。雨が斜めに降る浮世絵の詩情。<br>
+            桜が舞い散る一瞬の無常観。月光が水面に映る静寂。<br><br>
+            
+            古来より日本人が愛でてきた自然の美を、現代のデジタル技術で再現する。<br>
+            WebGL、Three.js、Canvas API——最新の技術を使って、<br>
+            千年変わらない美の本質を表現する実験。<br><br>
+            
+            これは技術者としての修行であり、美的探求の記録である。
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="footer-content">
+            <p>© 2025 ZEN Art Portfolio - 継続的な美的探求の記録</p>
+        </div>
+    </footer>
+    
+    <!-- Work Modal -->
+    <div id="workModal" class="work-modal">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">作品タイトル</h3>
+            <button class="close-btn" id="closeModal">×</button>
+        </div>
+        <div class="modal-content">
+            <canvas class="work-canvas" id="workCanvas"></canvas>
+        </div>
+    </div>
 
-  <script>
-    async function loadArtworks() {
-      const res = await fetch('artworks.json');
-      const artworks = await res.json();
-      const gallery = document.getElementById('gallery');
-
-      artworks.forEach(({ title, image, prompt, code }) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-
-        card.innerHTML = `
-          <img src="\${image}" alt="\${title}" />
-          <h2>\${title}</h2>
-          <div class="buttons">
-            <button onclick="copyText(\`${prompt}\`)">Prompt Copy</button>
-            <button onclick="copyText(\`${code}\`)">Code Copy</button>
-          </div>
-        `;
-
-        gallery.appendChild(card);
-      });
-    }
-
-    function copyText(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert('Copied!');
-      });
-    }
-
-    loadArtworks();
-  </script>
+    <script>
+        // ===== ZEN ART PORTFOLIO SYSTEM =====
+        
+        // Sample artworks data
+        const artworksData = [
+            {
+                "title": "Zen Mandala",
+                "subtitle": "幾何学的調和",
+                "description": "Three.jsとWebGLシェーダーを用いた動的曼荼羅の生成。数学的美と禅的瞑想の融合を探求。",
+                "image": "https://placehold.co/600x400?text=Zen+Mandala",
+                "prompt": "Create a zen mandala with intricate geometric patterns, using soft earth tones and gold accents, symmetrical design, peaceful and meditative atmosphere",
+                "code": "// Mandala generation with Three.js\nconst geometry = new THREE.RingGeometry(1, 100, 8, 8);\nconst material = new THREE.MeshBasicMaterial({color: 0xd4af37});\nconst mandala = new THREE.Mesh(geometry, material);",
+                "tech": ["Three.js", "GLSL", "WebGL"],
+                "type": "mandala"
+            },
+            {
+                "title": "Digital Zen Garden",
+                "subtitle": "デジタル枯山水",
+                "description": "パーティクルシステムとノイズ関数を用いた、インタラクティブな砂庭のシミュレーション。",
+                "image": "https://placehold.co/600x400?text=Digital+Zen+Garden",
+                "prompt": "Create a digital zen garden with raked sand patterns, minimalist stones, subtle lighting, serene atmosphere, modern interpretation of traditional Japanese aesthetics",
+                "code": "// Zen garden particle system\nclass ZenGarden {\n  constructor() {\n    this.particles = [];\n    this.initParticles();\n  }\n}",
+                "tech": ["WebGL", "Noise", "Physics"],
+                "type": "zen-garden"
+            },
+            {
+                "title": "Ink Meditation",
+                "subtitle": "墨絵の瞑想",
+                "description": "墨が和紙に滲む瞬間の美的表現。書道の精神性をデジタルで再現した作品。",
+                "image": "https://placehold.co/600x400?text=Ink+Meditation",
+                "prompt": "Traditional Japanese ink painting style, flowing black ink on white paper, organic flowing forms, minimalist composition, contemplative mood",
+                "code": "// Ink bleeding simulation\nfunction simulateInk(x, y) {\n  // Perlin noise for organic flow\n  const flow = noise(x, y, time);\n  return flow;\n}",
+                "tech": ["Canvas 2D", "Fluid Dynamics", "書道"],
+                "type": "ink"
+            },
+            {
+                "title": "Breathing Interface",
+                "subtitle": "呼吸するUI",
+                "description": "生体リズムに同調するインターフェース実験。イージング関数と時間を用いた有機的なアニメーション。",
+                "image": "https://placehold.co/600x400?text=Breathing+Interface",
+                "prompt": "Organic breathing interface design, subtle pulsing animations, biometric rhythm sync, calming colors, zen-like interaction patterns",
+                "code": "// Breathing animation\nconst breathe = (time) => {\n  const cycle = Math.sin(time * 0.5);\n  return 1 + cycle * 0.1;\n};",
+                "tech": ["React", "Framer Motion", "WebAPI"],
+                "type": "breathing"
+            },
+            {
+                "title": "Sakura Storm",
+                "subtitle": "桜吹雪",
+                "description": "散りゆく桜の花びらの物理シミュレーション。無常の美を現代技術で表現。",
+                "image": "https://placehold.co/600x400?text=Sakura+Storm",
+                "prompt": "Cherry blossom petals falling in wind, soft pink colors, graceful movement, spring atmosphere, Japanese aesthetic",
+                "code": "// Sakura particle system\nclass SakuraPetal {\n  constructor(x, y) {\n    this.position = new Vector2(x, y);\n    this.velocity = new Vector2();\n  }\n}",
+                "tech": ["Particle Physics", "Wind Simulation", "花見"],
+                "type": "sakura"
+            },
+            {
+                "title": "Moonlight Path",
+                "subtitle": "月光の道",
+                "description": "水面に映る月光のレイトレーシング。夜の静寂美をデジタルで再現。",
+                "image": "https://placehold.co/600x400?text=Moonlight+Path",
+                "prompt": "Moonlight reflecting on calm water surface, peaceful night scene, silver light path, mystical atmosphere, traditional Japanese night scenery",
+                "code": "// Moonlight reflection\nfunction drawMoonlight(canvas) {\n  const gradient = canvas.createLinearGradient(0, 0, 0, height);\n  gradient.addColorStop(0, '#f8f8f0');\n}",
+                "tech": ["Ray Tracing", "Water Reflection", "月見"],
+                "type": "moonlight"
+            }
+        ];
+        
+        // ===== THREE.JS BACKGROUND SYSTEM =====
+        let scene, camera, renderer, particles;
+        let animationId;
+        
+        function initThreeJS() {
+            const canvas = document.getElementById('zen-canvas');
+            if (!canvas) return;
+            
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            
+            // Create zen particle system
+            createZenParticles();
+            
+            camera.position.z = 10;
+            animate();
+        }
+        
+        function createZenParticles() {
+            const geometry = new THREE.BufferGeometry();
+            const particleCount = 150;
+            const positions = new Float32Array(particleCount * 3);
+            const velocities = new Float32Array(particleCount * 3);
+            const sizes = new Float32Array(particleCount);
+            
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 20;
+                positions[i + 1] = (Math.random() - 0.5) * 20;
+                positions[i + 2] = (Math.random() - 0.5) * 20;
+                
+                velocities[i] = (Math.random() - 0.5) * 0.02;
+                velocities[i + 1] = (Math.random() - 0.5) * 0.02;
+                velocities[i + 2] = (Math.random() - 0.5) * 0.02;
+                
+                sizes[i / 3] = Math.random() * 0.03 + 0.01;
+            }
+            
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+            geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            
+            const material = new THREE.PointsMaterial({
+                color: 0xd4af37,
+                size: 0.02,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending,
+                sizeAttenuation: true
+            });
+            
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+        }
+        
+        function animate() {
+            animationId = requestAnimationFrame(animate);
+            
+            if (particles) {
+                const positions = particles.geometry.attributes.position.array;
+                const velocities = particles.geometry.attributes.velocity.array;
+                
+                for (let i = 0; i < positions.length; i += 3) {
+                    positions[i] += velocities[i];
+                    positions[i + 1] += velocities[i + 1];
+                    positions[i + 2] += velocities[i + 2];
+                    
+                    // Gentle boundary wrapping
+                    if (Math.abs(positions[i]) > 10) velocities[i] *= -0.9;
+                    if (Math.abs(positions[i + 1]) > 10) velocities[i + 1] *= -0.9;
+                    if (Math.abs(positions[i + 2]) > 10) velocities[i + 2] *= -0.9;
+                }
+                
+                particles.geometry.attributes.position.needsUpdate = true;
+                particles.rotation.y += 0.001;
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        // ===== CANVAS PREVIEW GENERATORS =====
+        class ZenCanvasGenerator {
+            constructor(canvas, type) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.type = type;
+                this.animationId = null;
+                this.startTime = Date.now();
+                
+                this.setupCanvas();
+                this.startAnimation();
+            }
+            
+            setupCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width * window.devicePixelRatio;
+                this.canvas.height = rect.height * window.devicePixelRatio;
+                this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+                this.canvas.style.width = rect.width + 'px';
+                this.canvas.style.height = rect.height + 'px';
+            }
+            
+            startAnimation() {
+                this.draw();
+            }
+            
+            stopAnimation() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+            }
+            
+            draw() {
+                const time = (Date.now() - this.startTime) * 0.001;
+                const width = this.canvas.clientWidth;
+                const height = this.canvas.clientHeight;
+                
+                // Clear with zen background
+                this.ctx.fillStyle = '#f8f8f0';
+                this.ctx.fillRect(0, 0, width, height);
+                
+                switch (this.type) {
+                    case 'mandala':
+                        this.drawMandala(time, width, height);
+                        break;
+                    case 'zen-garden':
+                        this.drawZenGarden(time, width, height);
+                        break;
+                    case 'ink':
+                        this.drawInk(time, width, height);
+                        break;
+                    case 'breathing':
+                        this.drawBreathing(time, width, height);
+                        break;
+                    case 'sakura':
+                        this.drawSakura(time, width, height);
+                        break;
+                    case 'moonlight':
+                        this.drawMoonlight(time, width, height);
+                        break;
+                    default:
+                        this.drawDefault(time, width, height);
+                }
+                
+                this.animationId = requestAnimationFrame(() => this.draw());
+            }
+            
+            drawMandala(time, width, height) {
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const layers = 6;
+                
+                for (let layer = 0; layer < layers; layer++) {
+                    const radius = 20 + layer * 15;
+                    const segments = 8 + layer * 4;
+                    const rotation = time * (layer % 2 === 0 ? 0.2 : -0.2) + layer * Math.PI / 12;
+                    
+                    this.ctx.save();
+                    this.ctx.translate(centerX, centerY);
+                    this.ctx.rotate(rotation);
+                    
+                    this.ctx.beginPath();
+                    for (let i = 0; i <= segments; i++) {
+                        const angle = (i / segments) * Math.PI * 2;
+                        const x = Math.cos(angle) * radius;
+                        const y = Math.sin(angle) * radius;
+                        
+                        if (i === 0) this.ctx.moveTo(x, y);
+                        else this.ctx.lineTo(x, y);
+                    }
+                    
+                    this.ctx.closePath();
+                    this.ctx.strokeStyle = `rgba(45, 45, 45, ${0.8 - layer * 0.1})`;
+                    this.ctx.lineWidth = Math.max(1, 3 - layer * 0.3);
+                    this.ctx.stroke();
+                    
+                    this.ctx.restore();
+                }
+                
+                // Center circle
+                this.ctx.beginPath();
+                this.ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
+                this.ctx.fillStyle = '#d4af37';
+                this.ctx.fill();
+            }
+            
+            drawZenGarden(time, width, height) {
+                const ripples = 5;
+                const centerX = width / 2;
+                const centerY = height / 2;
+                
+                for (let i = 0; i < ripples; i++) {
+                    const phase = time * 0.5 + i * 0.8;
+                    const radius = (Math.sin(phase) * 0.5 + 0.5) * 80 + 20;
+                    const alpha = (Math.sin(phase + Math.PI) * 0.5 + 0.5) * 0.6;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(centerX + Math.sin(time + i) * 20, centerY + Math.cos(time + i) * 10, radius, 0, Math.PI * 2);
+                    this.ctx.strokeStyle = `rgba(45, 45, 45, ${alpha})`;
+                    this.ctx.lineWidth = 2;
+                    this.ctx.stroke();
+                }
+                
+                // Zen stones
+                for (let i = 0; i < 3; i++) {
+                    const x = centerX + Math.sin(i * 2) * 40;
+                    const y = centerY + Math.cos(i * 2) * 30;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(x, y, 12 + i * 3, 8 + i * 2, i * 0.5, 0, Math.PI * 2);
+                    this.ctx.fillStyle = `rgba(74, 74, 74, 0.7)`;
+                    this.ctx.fill();
+                }
+            }
+            
+            drawInk(time, width, height) {
+                const drops = 3;
+                
+                for (let i = 0; i < drops; i++) {
+                    const phase = (time + i * 2) % 6;
+                    const x = width * (0.2 + i * 0.3);
+                    const y = height * (0.3 + Math.sin(time + i) * 0.2);
+                    
+                    const radius = Math.min(phase * 15, 40);
+                    const alpha = Math.max(0, 1 - phase / 6);
+                    
+                    // Ink bleeding effect
+                    for (let layer = 0; layer < 5; layer++) {
+                        this.ctx.save();
+                        this.ctx.globalAlpha = alpha * (1 - layer / 5) * 0.3;
+                        this.ctx.filter = `blur(${layer * 2}px)`;
+                        
+                        this.ctx.beginPath();
+                        this.ctx.arc(x, y, radius + layer * 5, 0, Math.PI * 2);
+                        this.ctx.fillStyle = '#2d2d2d';
+                        this.ctx.fill();
+                        
+                        this.ctx.restore();
+                    }
+                }
+            }
+            
+            drawBreathing(time, width, height) {
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const breathe = Math.sin(time * 0.8) * 0.3 + 0.7;
+                
+                for (let i = 0; i < 5; i++) {
+                    const radius = (i + 1) * 15 * breathe;
+                    const alpha = (1 - i * 0.15) * breathe * 0.6;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    this.ctx.strokeStyle = `rgba(45, 45, 45, ${alpha})`;
+                    this.ctx.lineWidth = 2;
+                    this.ctx.stroke();
+                }
+                
+                this.ctx.beginPath();
+                this.ctx.arc(centerX, centerY, 8 * breathe, 0, Math.PI * 2);
+                this.ctx.fillStyle = `rgba(212, 175, 55, ${breathe})`;
+                this.ctx.fill();
+            }
+            
+            drawSakura(time, width, height) {
+                const petalCount = 20;
+                
+                for (let i = 0; i < petalCount; i++) {
+                    const x = ((time * 50 + i * 100) % (width + 100)) - 50;
+                    const y = ((time * 30 + i * 50) % (height + 100)) - 50;
+                    const rotation = time + i;
+                    const size = 3 + Math.sin(time + i) * 2;
+                    
+                    this.ctx.save();
+                    this.ctx.translate(x, y);
+                    this.ctx.rotate(rotation);
+                    
+                    // Sakura petal shape
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, -size);
+                    this.ctx.quadraticCurveTo(size, -size/2, size/2, 0);
+                    this.ctx.quadraticCurveTo(size, size/2, 0, size);
+                    this.ctx.quadraticCurveTo(-size, size/2, -size/2, 0);
+                    this.ctx.quadraticCurveTo(-size, -size/2, 0, -size);
+                    
+                    this.ctx.fillStyle = `hsla(${330 + Math.sin(i) * 20}, 70%, 85%, 0.8)`;
+                    this.ctx.fill();
+                    
+                    this.ctx.restore();
+                }
+            }
+            
+            drawMoonlight(time, width, height) {
+                // Night gradient
+                const gradient = this.ctx.createLinearGradient(0, 0, 0, height);
+                gradient.addColorStop(0, '#1a1a2e');
+                gradient.addColorStop(0.6, '#2a2a3e');
+                gradient.addColorStop(1, '#1a1a2e');
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, width, height);
+                
+                // Moon
+                const moonX = width * 0.7;
+                const moonY = height * 0.25;
+                this.ctx.beginPath();
+                this.ctx.arc(moonX, moonY, 25, 0, Math.PI * 2);
+                this.ctx.fillStyle = '#f8f8f0';
+                this.ctx.fill();
+                
+                // Moonlight reflection
+                const pathWidth = 40;
+                for (let y = height * 0.6; y < height; y += 3) {
+                    const waveOffset = Math.sin(time * 2 + y * 0.02) * 10;
+                    const alpha = 0.3 * (1 - (y - height * 0.6) / (height * 0.4));
+                    
+                    this.ctx.fillStyle = `rgba(248, 248, 240, ${alpha})`;
+                    this.ctx.fillRect(moonX + waveOffset - pathWidth/2, y, pathWidth, 3);
+                }
+            }
+            
+            drawDefault(time, width, height) {
+                const centerX = width / 2;
+                const centerY = height / 2;
+                
+                this.ctx.beginPath();
+                this.ctx.arc(centerX, centerY, 30 + Math.sin(time) * 10, 0, Math.PI * 2);
+                this.ctx.strokeStyle = 'rgba(45, 45, 45, 0.6)';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+            }
+        }
+        
+        // ===== MODAL SYSTEM =====
+        let currentModal = null;
+        let modalCanvas = null;
+        
+        function openWorkModal(work) {
+            const modal = document.getElementById('workModal');
+            const title = document.getElementById('modalTitle');
+            const canvas = document.getElementById('workCanvas');
+            
+            title.textContent = work.title;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Initialize modal canvas
+            setTimeout(() => {
+                if (modalCanvas) {
+                    modalCanvas.stopAnimation();
+                }
+                modalCanvas = new ZenCanvasGenerator(canvas, work.type);
+                currentModal = work;
+            }, 300);
+        }
+        
+        function closeWorkModal() {
+            const modal = document.getElementById('workModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            if (modalCanvas) {
+                modalCanvas.stopAnimation();
+                modalCanvas = null;
+            }
+            currentModal = null;
+        }
+        
+        // ===== COPY FUNCTIONS =====
+        function copyText(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showNotification('コピーしました');
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    fallbackCopyTextToClipboard(text);
+                });
+            } else {
+                fallbackCopyTextToClipboard(text);
+            }
+        }
+        
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showNotification('コピーしました');
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+                showNotification('コピーに失敗しました');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: var(--zen-sumi);
+                color: var(--zen-washi);
+                padding: var(--space-sm) var(--space-md);
+                border-radius: 8px;
+                z-index: 10001;
+                font-size: var(--font-size-sm);
+                opacity: 0;
+                transform: translateY(-1rem);
+                transition: all 0.3s var(--ease-zen);
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateY(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(-1rem)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 2000);
+        }
+        
+        // ===== GALLERY GENERATION =====
+        function generateGallery() {
+            const gallery = document.getElementById('gallery');
+            if (!gallery) return;
+            
+            artworksData.forEach((work, index) => {
+                const card = document.createElement('div');
+                card.className = 'work-card';
+                
+                card.innerHTML = `
+                    <div class="work-preview">
+                        <canvas class="preview-canvas" data-type="${work.type}"></canvas>
+                    </div>
+                    <div class="work-content">
+                        <h3 class="work-title">${work.title}</h3>
+                        <p class="work-subtitle">${work.subtitle}</p>
+                        <p class="work-description">${work.description}</p>
+                        <div class="work-actions">
+                            <button class="action-btn" onclick="copyText(\`${work.prompt.replace(/`/g, '\\`')}\`)">Prompt Copy</button>
+                            <button class="action-btn" onclick="copyText(\`${work.code.replace(/`/g, '\\`')}\`)">Code Copy</button>
+                        </div>
+                        <div class="work-tech">
+                            ${work.tech.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                // Add click handler for modal
+                card.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('action-btn')) {
+                        openWorkModal(work);
+                    }
+                });
+                
+                gallery.appendChild(card);
+                
+                // Initialize preview canvas
+                const canvas = card.querySelector('.preview-canvas');
+                if (canvas) {
+                    setTimeout(() => {
+                        new ZenCanvasGenerator(canvas, work.type);
+                    }, index * 200);
+                }
+            });
+        }
+        
+        // ===== SCROLL ANIMATIONS =====
+        function setupScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.2,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe elements
+            document.querySelectorAll('.work-card, .section-title, .philosophy-text').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // Staggered animation for work cards
+            const workCards = document.querySelectorAll('.work-card');
+            workCards.forEach((card, index) => {
+                card.style.transitionDelay = `${index * 0.1}s`;
+            });
+        }
+        
+        // ===== NAVIGATION =====
+        function setupNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = item.getAttribute('href');
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        const offsetTop = target.offsetTop - 80;
+                        window.scrollTo({
+                            top: offsetTop,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        }
+        
+        // ===== EVENT LISTENERS =====
+        function setupEventListeners() {
+            const closeBtn = document.getElementById('closeModal');
+            const modal = document.getElementById('workModal');
+            
+            closeBtn.addEventListener('click', closeWorkModal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeWorkModal();
+                }
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && currentModal) {
+                    closeWorkModal();
+                }
+            });
+            
+            window.addEventListener('resize', () => {
+                if (camera && renderer) {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                }
+            });
+        }
+        
+        // ===== HERO BREATHING EFFECT =====
+        function setupHeroBreathing() {
+            setInterval(() => {
+                const heroTitle = document.querySelector('.hero-title');
+                if (heroTitle && !currentModal) {
+                    const scale = 1 + Math.sin(Date.now() * 0.001) * 0.02;
+                    heroTitle.style.transform = `scale(${scale})`;
+                }
+            }, 16);
+        }
+        
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize core systems
+            initThreeJS();
+            generateGallery();
+            setupScrollAnimations();
+            setupNavigation();
+            setupEventListeners();
+            setupHeroBreathing();
+            
+            // Cleanup on page unload
+            window.addEventListener('beforeunload', () => {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+                if (modalCanvas) {
+                    modalCanvas.stopAnimation();
+                }
+            });
+        });
+        
+        // ===== PERFORMANCE OPTIMIZATION =====
+        // Throttle resize events
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                document.querySelectorAll('.preview-canvas').forEach(canvas => {
+                    const generator = canvas.zenGenerator;
+                    if (generator) {
+                        generator.setupCanvas();
+                    }
+                });
+            }, 250);
+        });
+        
+        // Pause animations when page is not visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            } else {
+                if (!animationId && scene && camera && renderer) {
+                    animate();
+                }
+            }
+        });
+    </script>
 </body>
 </html>
